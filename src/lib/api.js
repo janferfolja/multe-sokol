@@ -36,10 +36,13 @@ function supabaseApi() {
       const { data } = sb.auth.onAuthStateChange((_event, session) => setTimeout(() => cb(session?.user ?? null), 0))
       return () => data.subscription.unsubscribe()
     },
-    async signIn(email) {
-      // The token comes back in the URL hash, so return to a query-param route, not '#/admin'.
-      const redirectTo = window.location.origin + window.location.pathname + '?admin'
-      check(await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } }))
+    // Email + password: admin accounts are created in the Supabase dashboard, so no emails are ever sent.
+    async signIn(email, password) {
+      const { error } = await sb.auth.signInWithPassword({ email, password })
+      if (error) throw new Error(/invalid login credentials/i.test(error.message) ? 'Napačen e-naslov ali geslo.' : error.message)
+    },
+    async changePassword(password) {
+      check(await sb.auth.updateUser({ password }))
     },
     async signOut() {
       await sb.auth.signOut()
@@ -86,6 +89,7 @@ function demoApi() {
     getUser: async () => user,
     onAuthChange(cb) { listeners.add(cb); return () => listeners.delete(cb) },
     signIn: async (email) => setUser({ email }),
+    changePassword: async () => {},
     signOut: async () => setUser(null),
     isAdmin: async () => !!user,
 

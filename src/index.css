@@ -416,3 +416,6 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 .ios-share { display: inline-block; border: 1.5px solid currentColor; border-radius: 4px; padding: 0 4px; font-size: 0.85em; }
 .install-link { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: center; border-top: 2px dashed var(--line-soft); padding-top: 14px; font-size: 0.85em; }
 .install-link code { font-family: var(--mono); font-size: 0.85em; background: var(--card-2); padding: 3px 6px; border-radius: 5px; word-break: break-all; }
+
+.admin-bar-actions { display: flex; gap: 6px; }
+.narrow-modal { max-width: 400px; }

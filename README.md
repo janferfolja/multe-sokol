@@ -1,6 +1,6 @@
 # Multe Sokol 🦅
 
-Hall of Shame for the team's fines. Anyone with the link can look; admins log in by email to add fines, mark them paid, and manage players and fine types.
+Hall of Shame for the team's fines. Anyone with the link can look; admins log in with email + password to add fines, mark them paid, and manage players and fine types.
 
 - **Frontend:** Vite + React, deployed to GitHub Pages
 - **Data:** Supabase (Postgres). Everyone can read, only emails in the `admins` table can write. This is enforced by the database, not just the UI.
@@ -20,11 +20,11 @@ Without Supabase keys the app runs in **demo mode**: it uses the imported data a
 1. Create a free project at <https://supabase.com>.
 2. **SQL Editor** → paste `supabase/schema.sql` → Run.
 3. **SQL Editor** → paste `supabase/seed.sql` → Run. This imports last season's 213 fines, 33 players and 27 fine types.
-4. Add the admins (SQL Editor):
+4. Create each admin's login: **Authentication → Users → Add user → Create new user**, enter email + password and tick **Auto Confirm User** (no email is sent). Then allow them to write (SQL Editor):
    ```sql
-   insert into public.admins (email) values ('you@example.com'), ('teammate@example.com');
+   insert into public.admins (email) values ('you@example.com');
    ```
-5. **Authentication → URL Configuration**: set *Site URL* to your Pages URL (e.g. `https://<user>.github.io/multe-sokol/`) and add the same URL under *Redirect URLs*. Also add `http://localhost:5173/` if you want to log in while running locally.
+5. Recommended: **Authentication → Sign In / Providers → Email**: turn off **Allow new users to sign up**, so only accounts you create can log in.
 6. **Project Settings → API**: copy the *Project URL* and the *anon public* key.
 
 ### 2. GitHub
@@ -42,7 +42,7 @@ For local development against the real database, copy `.env.example` to `.env.lo
 - **Admin → Zgodovina:** edit, un-pay or delete any fine.
 - **Admin → Igralci / Vrste mult:** add players or fine types and change prices. A price change only affects new fines; each fine keeps the amount it was given with.
 
-Adding another admin later is the same `insert into public.admins …` line.
+Adding another admin later: create their user in **Authentication → Users** (Auto Confirm) and run the `insert into public.admins …` line. Each admin can change their password from the admin panel (*Spremeni geslo*). A forgotten password can be reset by another admin from the same Users page.
 
 ## Notes
 

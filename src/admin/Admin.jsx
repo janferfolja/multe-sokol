@@ -71,7 +71,10 @@ export default function Admin({ data, reload }) {
     <>
       <div className="admin-bar">
         <span>Prijavljen kot <b>{user.email}</b></span>
-        <button className="btn btn-sm btn-ghost" onClick={() => api.signOut()}>Odjava</button>
+        <div className="admin-bar-actions">
+          <ChangePassword run={run} />
+          <button className="btn btn-sm btn-ghost" onClick={() => api.signOut()}>Odjava</button>
+        </div>
       </div>
       <div className="tabs" role="tablist">
         {TABS.map(([id, label]) => (
@@ -92,15 +95,15 @@ export default function Admin({ data, reload }) {
 
 function Login() {
   const [email, setEmail] = useState('')
-  const [state, setState] = useState('idle') // idle | sending | sent | error
+  const [password, setPassword] = useState('')
+  const [state, setState] = useState('idle') // idle | sending | error
   const [error, setError] = useState('')
 
   const submit = async (e) => {
     e.preventDefault()
     setState('sending')
     try {
-      await api.signIn(email.trim())
-      setState('sent')
+      await api.signIn(email.trim(), password)
     } catch (err) {
       setError(err.message)
       setState('error')
@@ -110,21 +113,63 @@ function Login() {
   return (
     <section className="section narrow">
       <h2 className="section-title"><span className="section-icon">🔐</span>Prijava za admine</h2>
-      {state === 'sent' && !isDemo ? (
-        <p>Preveri e-pošto <b>{email}</b> in odpri povezavo za prijavo.</p>
-      ) : (
-        <form onSubmit={submit} className="form">
-          <label>
-            E-pošta
-            <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </label>
-          <button className="btn btn-primary" disabled={state === 'sending'}>
-            {isDemo ? 'Vstopi (demo)' : state === 'sending' ? 'Pošiljam…' : 'Pošlji mi povezavo'}
-          </button>
-          {state === 'error' && <p className="form-error">{error}</p>}
-          <p className="hint">{isDemo ? 'V demo načinu deluje katerikoli e-naslov.' : 'Po e-pošti ti pošljemo povezavo za prijavo, brez gesla.'}</p>
-        </form>
-      )}
+      <form onSubmit={submit} className="form">
+        <label>
+          E-pošta
+          <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </label>
+        <label>
+          Geslo
+          <input type="password" required={!isDemo} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
+        <button className="btn btn-primary" disabled={state === 'sending'}>
+          {isDemo ? 'Vstopi (demo)' : state === 'sending' ? 'Prijavljam…' : 'Prijava'}
+        </button>
+        {state === 'error' && <p className="form-error">{error}</p>}
+        <p className="hint">{isDemo ? 'V demo načinu deluje katerikoli e-naslov.' : 'Samo za admine. Račun ti ustvari admin v Supabase.'}</p>
+      </form>
     </section>
+  )
+}
+
+function ChangePassword({ run }) {
+  const [open, setOpen] = useState(false)
+  const [pw, setPw] = useState('')
+  const [pw2, setPw2] = useState('')
+  const mismatch = pw2 !== '' && pw !== pw2
+
+  const save = async (e) => {
+    e.preventDefault()
+    if (pw.length < 8 || pw !== pw2) return
+    if (await run(() => api.changePassword(pw), 'Geslo spremenjeno ✓')) {
+      setOpen(false)
+      setPw('')
+      setPw2('')
+    }
+  }
+
+  return (
+    <>
+      <button className="btn btn-sm btn-ghost" onClick={() => setOpen(true)}>Spremeni geslo</button>
+      {open && (
+        <div className="modal-backdrop" onClick={() => setOpen(false)}>
+          <form className="modal form narrow-modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
+            <button type="button" className="modal-close" onClick={() => setOpen(false)} aria-label="Zapri">×</button>
+            <h2>Novo geslo</h2>
+            <label>Novo geslo (vsaj 8 znakov)
+              <input type="password" autoComplete="new-password" minLength={8} required value={pw} onChange={(e) => setPw(e.target.value)} />
+            </label>
+            <label>Ponovi geslo
+              <input type="password" autoComplete="new-password" required value={pw2} onChange={(e) => setPw2(e.target.value)} />
+            </label>
+            {mismatch && <p className="form-error">Gesli se ne ujemata.</p>}
+            <div className="form-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Prekliči</button>
+              <button className="btn btn-primary" disabled={pw.length < 8 || pw !== pw2}>Shrani</button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
   )
 }
