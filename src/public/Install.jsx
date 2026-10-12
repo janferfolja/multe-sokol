@@ -12,9 +12,9 @@ export default function Install() {
     return (
       <section className="section narrow install">
         <img src="icon-192.png" alt="" className="install-icon" />
-        <h2 className="section-title">Aplikacija nameščena ✓</h2>
-        <p>Že uporabljaš aplikacijo Multe Sokol.</p>
-        <a className="btn btn-primary btn-lg" href="#/">Na lestvico</a>
+        <h2 className="section-title">App installata ✓</h2>
+        <p>Stai già usando l'app Multe Sokol.</p>
+        <a className="btn btn-primary btn-lg" href="#/">Apri Multe Sokol</a>
       </section>
     )
   }
@@ -22,11 +22,11 @@ export default function Install() {
   return (
     <section className="section narrow install">
       <img src="icon-192.png" alt="" className="install-icon" />
-      <h2 className="section-title">Prenesi aplikacijo</h2>
-      <p className="muted">Brezplačno, brez trgovine: namestiš jo kar iz brskalnika in se prikaže med aplikacijami na telefonu.</p>
+      <h2 className="section-title">Scarica l'app</h2>
+      <p className="muted">Gratis, niente store: si installa direttamente dal browser e appare tra le app del telefono.</p>
 
       {canPrompt && (
-        <button className="btn btn-primary btn-lg" onClick={prompt}>📲 Namesti Multe Sokol</button>
+        <button className="btn btn-primary btn-lg" onClick={prompt}>📲 Installa Multe Sokol</button>
       )}
 
       <div className="tabs install-tabs" role="tablist">
@@ -36,25 +36,25 @@ export default function Install() {
 
       {tab === 'android' ? (
         <ol className="install-steps">
-          <li>Odpri to stran v <b>Chromu</b>.</li>
-          <li>{canPrompt ? <>Tapni <b>Namesti Multe Sokol</b> zgoraj.</> : <>Tapni meni <b>⋮</b> zgoraj desno.</>}</li>
-          {!canPrompt && <li>Izberi <b>Namesti aplikacijo</b> (ali <b>Dodaj na začetni zaslon</b>).</li>}
-          <li>Potrdi: ikona 🦅 se prikaže med tvojimi aplikacijami.</li>
+          <li>Apri questa pagina con <b>Chrome</b>.</li>
+          <li>{canPrompt ? <>Tocca <b>Installa Multe Sokol</b> qui sopra.</> : <>Tocca il menu <b>⋮</b> in alto a destra.</>}</li>
+          {!canPrompt && <li>Scegli <b>Installa app</b> (o <b>Aggiungi a schermata Home</b>).</li>}
+          <li>Conferma: l'icona 🦅 compare tra le tue app.</li>
         </ol>
       ) : (
         <ol className="install-steps">
-          <li>Odpri to stran v <b>Safariju</b> (iz Instagrama/WhatsAppa ne gre: najprej „Odpri v Safariju”).</li>
-          <li>Tapni gumb <b>Deli</b> <span className="ios-share" aria-hidden>⬆︎</span> spodaj.</li>
-          <li>Podrsaj in izberi <b>Dodaj na začetni zaslon</b>.</li>
-          <li>Tapni <b>Dodaj</b>: ikona 🦅 se prikaže na začetnem zaslonu.</li>
+          <li>Apri questa pagina con <b>Safari</b> (non funziona da Instagram/WhatsApp: prima “Apri in Safari”).</li>
+          <li>Tocca il tasto <b>Condividi</b> <span className="ios-share" aria-hidden>⬆︎</span> in basso.</li>
+          <li>Scorri e scegli <b>Aggiungi alla schermata Home</b>.</li>
+          <li>Tocca <b>Aggiungi</b>: l'icona 🦅 compare nella Home.</li>
         </ol>
       )}
 
       <div className="install-link">
-        <span className="muted">Povezava za deljenje</span>
+        <span className="muted">Link da condividere</span>
         <code>{url}#/app</code>
         <button className="btn btn-sm" onClick={() => navigator.clipboard?.writeText(`${url}#/app`).then(() => setCopied(true))}>
-          {copied ? 'Kopirano ✓' : 'Kopiraj'}
+          {copied ? 'Copiato ✓' : 'Copia'}
         </button>
       </div>
     </section>
