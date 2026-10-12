@@ -62,3 +62,10 @@ export const multeWord = (n) => {
   return m === 1 ? 'multa' : m === 2 ? 'multi' : m === 3 || m === 4 ? 'multe' : 'mult'
 }
 export const multeN = (n) => `${n} ${multeWord(n)}`
+
+export const donationKasa = (donations) => donations.reduce((n, d) => n + (d.quantity ?? 1), 0)
+export const donorName = (d, players) =>
+  d.player_id != null ? fullName(players.find((p) => p.id === d.player_id)) : d.donor_name || 'Anonimno'
+
+// Team usage: 1 kasa, more kase.
+export const kaseWord = (n) => (n === 1 ? 'kasa' : 'kase')

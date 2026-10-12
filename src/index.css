@@ -444,3 +444,5 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
   .stats-total-numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 8px; }
   .stat-pill { border-right: 0; padding: 0; min-width: 0; }
 }
+
+.stat-pill-sub { font-size: 0.66em; opacity: 0.75; font-weight: 700; margin-top: 1px; }

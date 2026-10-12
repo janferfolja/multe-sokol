@@ -9,8 +9,6 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const isDemo = !url || !key
 
 function supabaseApi() {
-  // Implicit flow so the magic link works even when opened in a different browser
-  // (e.g. the phone's mail app) than the one that requested it.
   const sb = createClient(url, key, { auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true } })
   const check = ({ data, error }) => {
     if (error) throw new Error(error.message)
@@ -19,12 +17,15 @@ function supabaseApi() {
 
   return {
     async load() {
-      const [players, fineTypes, fines] = await Promise.all([
+      const [players, fineTypes, fines, donations] = await Promise.all([
         sb.from('players').select('*').order('surname').then(check),
         sb.from('fine_types').select('*').order('id').then(check),
         sb.from('fines').select('*').order('date', { ascending: false }).order('id', { ascending: false }).then(check),
+        // Tolerate the donations table not existing yet (migration not run): show none.
+        sb.from('donations').select('*').order('date', { ascending: false }).order('id', { ascending: false })
+          .then(({ data, error }) => (error ? [] : data)),
       ])
-      return { players, fineTypes, fines }
+      return { players, fineTypes, fines, donations }
     },
 
     async getUser() {
@@ -55,6 +56,8 @@ function supabaseApi() {
     addFines: async (rows) => check(await sb.from('fines').insert(rows).select()),
     updateFine: async (id, patch) => check(await sb.from('fines').update(patch).eq('id', id)),
     deleteFines: async (ids) => check(await sb.from('fines').delete().in('id', ids)),
+    addDonation: async (row) => check(await sb.from('donations').insert(row)),
+    deleteDonation: async (id) => check(await sb.from('donations').delete().eq('id', id)),
     setPaid: async (ids, paid) => check(await sb.from('fines').update({ paid }).in('id', ids)),
     savePlayer: async ({ id, ...p }) =>
       check(id ? await sb.from('players').update(p).eq('id', id) : await sb.from('players').insert(p)),
@@ -68,6 +71,7 @@ function demoApi() {
   let db
   try { db = JSON.parse(localStorage.getItem(STORE)) } catch { /* ignore */ }
   db ||= structuredClone(demoSeed)
+  db.donations ||= []
   let user = null
   try { user = JSON.parse(sessionStorage.getItem(STORE + '-user')) } catch { /* ignore */ }
   const listeners = new Set()
@@ -84,7 +88,8 @@ function demoApi() {
   return {
     async load() {
       const fines = [...db.fines].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
-      return structuredClone({ players: db.players, fineTypes: db.fineTypes, fines })
+      const donations = [...db.donations].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
+      return structuredClone({ players: db.players, fineTypes: db.fineTypes, fines, donations })
     },
     getUser: async () => user,
     onAuthChange(cb) { listeners.add(cb); return () => listeners.delete(cb) },
@@ -111,6 +116,14 @@ function demoApi() {
       Object.assign(f, patch)
       save()
     },
+    async addDonation(row) {
+      db.donations.push({ id: nextId(db.donations), quantity: 1, created_at: new Date().toISOString(), created_by: user?.email, ...row })
+      save()
+    },
+    async deleteDonation(id) {
+      db.donations = db.donations.filter((d) => d.id !== id)
+      save()
+    },
     async deleteFines(ids) {
       db.fines = db.fines.filter((f) => !ids.includes(f.id))
       save()
@@ -132,7 +145,7 @@ function demoApi() {
     },
     resetDemo() {
       try { localStorage.removeItem(STORE) } catch { /* ignore */ }
-      db = structuredClone(demoSeed)
+      db = { ...structuredClone(demoSeed), donations: [] }
     },
   }
 }

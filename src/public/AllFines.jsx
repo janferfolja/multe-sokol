@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { formatDate, fullName, priceLabel, seasonOf, seasonsIn } from '../lib/stats'
+import Donations from './Donations'
 
 // Filterable list of fines. Used publicly and, with `renderActions`/`selectable`, in admin.
 export function FineList({ data, fines, onPlayer, selectable, selected, onToggle, renderActions }) {
@@ -88,13 +89,16 @@ export default function AllFines({ data, onPlayer }) {
   const { filtered, controls } = useFineFilters(data)
   const [limit, setLimit] = useState(50)
   return (
-    <section className="section">
-      <h2 className="section-title"><span className="section-icon">📜</span>Multe<span className="count-chip">{filtered.length}</span></h2>
-      {controls}
-      <FineList data={data} fines={filtered.slice(0, limit)} onPlayer={onPlayer} />
-      {filtered.length > limit && (
-        <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Pokaži več</button>
-      )}
-    </section>
+    <>
+      <section className="section">
+        <h2 className="section-title"><span className="section-icon">📜</span>Multe<span className="count-chip">{filtered.length}</span></h2>
+        {controls}
+        <FineList data={data} fines={filtered.slice(0, limit)} onPlayer={onPlayer} />
+        {filtered.length > limit && (
+          <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Pokaži več</button>
+        )}
+      </section>
+      <Donations data={data} onPlayer={onPlayer} />
+    </>
   )
 }

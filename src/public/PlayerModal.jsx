@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { formatEuro, fullName, initials, playerStats } from '../lib/stats'
+import { donationKasa, formatEuro, fullName, initials, playerStats } from '../lib/stats'
 import { FineList } from './AllFines'
 
 export default function PlayerModal({ data, playerId, onClose }) {
@@ -12,6 +12,7 @@ export default function PlayerModal({ data, playerId, onClose }) {
   const player = data.players.find((p) => p.id === playerId)
   const fines = data.fines.filter((f) => f.player_id === playerId)
   const s = playerStats({ ...data, players: [player], fines })[0]
+  const charity = donationKasa((data.donations ?? []).filter((d) => d.player_id === playerId))
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -27,8 +28,11 @@ export default function PlayerModal({ data, playerId, onClose }) {
         <div className="stats-total-numbers">
           <div className="stat-pill"><span className="stat-pill-label">Multe</span><span className="stat-pill-value">{s.count}</span></div>
           <div className="stat-pill stat-pill-gold"><span className="stat-pill-label">Euro</span><span className="stat-pill-value">{formatEuro(s.euro)}</span></div>
-          <div className="stat-pill"><span className="stat-pill-label">Kasa</span><span className="stat-pill-value">{s.kasa}</span></div>
+          <div className="stat-pill"><span className="stat-pill-label">Kase</span><span className="stat-pill-value">{s.kasa}</span></div>
           <div className="stat-pill"><span className="stat-pill-label">Merenda</span><span className="stat-pill-value">{s.merenda}</span></div>
+          {charity > 0 && (
+            <div className="stat-pill"><span className="stat-pill-label">🍻 Dobrodelne</span><span className="stat-pill-value">{charity}</span></div>
+          )}
           <div className="stat-pill stat-pill-pending">
             <span className="stat-pill-label">Za plačat</span>
             <span className="stat-pill-value">{s.pending}{s.pendingEuro > 0 ? ` · ${formatEuro(s.pendingEuro)}` : ''}</span>

@@ -1,19 +1,27 @@
 import { useMemo, useState } from 'react'
 import {
   PODIUM_TITLES, daysSince, multeN, multeWord, formatDate, formatEuro, fullName, initials,
-  playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
+  donationKasa, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
 
 export default function Home({ data, onPlayer }) {
-  const seasons = useMemo(() => seasonsIn(data.fines), [data.fines])
+  const donations = useMemo(() => data.donations ?? [], [data.donations])
+  const seasons = useMemo(() => seasonsIn([...data.fines, ...donations]), [data.fines, donations])
   const [season, setSeason] = useState(seasons[0] ?? 'all')
 
   const seasonData = useMemo(
-    () => (season === 'all' ? data : { ...data, fines: data.fines.filter((f) => seasonOf(f.date) === season) }),
-    [data, season],
+    () => (season === 'all'
+      ? { ...data, donations }
+      : {
+          ...data,
+          fines: data.fines.filter((f) => seasonOf(f.date) === season),
+          donations: donations.filter((d) => seasonOf(d.date) === season),
+        }),
+    [data, donations, season],
   )
   const stats = useMemo(() => playerStats(seasonData), [seasonData])
   const totals = teamTotals(stats)
+  const charity = donationKasa(seasonData.donations)
 
   return (
     <>
@@ -33,7 +41,7 @@ export default function Home({ data, onPlayer }) {
           <div className="stats-total-numbers">
             <Pill label="Multe" value={totals.count} />
             <Pill label="Euro" value={formatEuro(totals.euro)} gold />
-            <Pill label="Kasa" value={totals.kasa} />
+            <Pill label="Kase" value={totals.kasa + charity} sub={charity > 0 ? `🍻 dobrodelne: ${charity}` : null} />
             <Pill label="Merenda" value={totals.merenda} />
             <Pill label="Neplačano" value={totals.pending} warn />
           </div>
@@ -68,11 +76,12 @@ export default function Home({ data, onPlayer }) {
   )
 }
 
-function Pill({ label, value, gold, warn }) {
+function Pill({ label, value, sub, gold, warn }) {
   return (
     <div className={`stat-pill ${gold ? 'stat-pill-gold' : ''} ${warn ? 'stat-pill-pending' : ''}`}>
       <span className="stat-pill-label">{label}</span>
       <span className="stat-pill-value">{value}</span>
+      {sub && <span className="stat-pill-sub">{sub}</span>}
     </div>
   )
 }
@@ -165,7 +174,7 @@ function PlayerCard({ s, max, onPlayer }) {
       </div>
       <div className="player-card-stats">
         <Row label="Euro" value={formatEuro(s.euro)} />
-        {s.kasa > 0 && <Row label="Kasa" value={s.kasa} />}
+        {s.kasa > 0 && <Row label={s.kasa === 1 ? 'Kasa' : 'Kase'} value={s.kasa} />}
         {s.merenda > 0 && <Row label="Merenda" value={s.merenda} />}
       </div>
       <div className="player-card-bar"><div className="player-card-bar-fill" style={{ width: `${ratio * 100}%` }} /></div>
