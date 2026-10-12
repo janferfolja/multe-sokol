@@ -1,0 +1,129 @@
+import { useMemo, useState } from 'react'
+import { api } from '../lib/api'
+import { formatDate, fullName, initials, priceLabel, todayISO } from '../lib/stats'
+
+// Add one fine type to one or more players in one go.
+export default function NewFines({ data, run }) {
+  const [date, setDate] = useState(todayISO)
+  const [typeId, setTypeId] = useState('')
+  const [picked, setPicked] = useState(() => new Set())
+  const [note, setNote] = useState('')
+  const [search, setSearch] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const players = useMemo(
+    () => data.players.filter((p) => p.active).sort((a, b) => fullName(a).localeCompare(fullName(b))),
+    [data.players],
+  )
+  const types = data.fineTypes.filter((t) => t.active)
+  const type = data.fineTypes.find((t) => t.id === Number(typeId))
+  const needle = search.trim().toLowerCase()
+  const visible = needle
+    ? players.filter((p) => `${fullName(p)} ${p.alias ?? ''}`.toLowerCase().includes(needle))
+    : players
+
+  const toggle = (id) => {
+    const next = new Set(picked)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setPicked(next)
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    if (!type || picked.size === 0) return
+    setBusy(true)
+    const rows = [...picked].map((player_id) => ({ player_id, fine_type_id: type.id, date, note: note.trim() || null }))
+    const n = rows.length
+    const ok = await run(() => api.addFines(rows), `${n} ${n === 1 ? 'multa aggiunta' : 'multe aggiunte'} ✓`)
+    setBusy(false)
+    if (ok) {
+      setPicked(new Set())
+      setNote('')
+      setSearch('')
+    }
+  }
+
+  const recent = [...data.fines]
+    .filter((f) => f.created_by !== 'import')
+    .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? '') || b.id - a.id)
+    .slice(0, 8)
+
+  return (
+    <>
+      <form className="section form" onSubmit={submit}>
+        <div className="form-row">
+          <label>
+            Data
+            <input type="date" value={date} max={todayISO()} onChange={(e) => setDate(e.target.value)} required />
+          </label>
+          <label className="grow">
+            Multa
+            <select value={typeId} onChange={(e) => setTypeId(e.target.value)} required>
+              <option value="">— scegli —</option>
+              {['euro', 'kasa', 'merenda'].map((kind) => (
+                <optgroup key={kind} label={kind === 'euro' ? 'Euro' : kind.toUpperCase()}>
+                  {types.filter((t) => t.kind === kind).map((t) => (
+                    <option key={t.id} value={t.id}>{t.name} — {priceLabel(t.kind, t.price)}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <fieldset className="player-picker">
+          <legend>
+            Giocatori <span className="count-chip">{picked.size}</span>
+            {picked.size > 0 && <button type="button" className="link small" onClick={() => setPicked(new Set())}>azzera</button>}
+          </legend>
+          <input type="search" placeholder="Filtra giocatori…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="chips">
+            {visible.map((p) => (
+              <button
+                type="button" key={p.id} aria-pressed={picked.has(p.id)}
+                className={`chip ${picked.has(p.id) ? 'on' : ''}`} onClick={() => toggle(p.id)}
+              >
+                <span className="chip-avatar">{initials(p)}</span>
+                {p.name} {p.surname}
+                {p.alias && <span className="chip-alias">{p.alias}</span>}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <label>
+          Nota (facoltativa)
+          <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="es. allenamento martedì, foto nel gruppo…" />
+        </label>
+
+        <button className="btn btn-primary btn-lg" disabled={busy || !type || picked.size === 0}>
+          {picked.size === 0 || !type
+            ? 'Scegli multa e giocatori'
+            : `Aggiungi ${picked.size} ${picked.size === 1 ? 'multa' : 'multe'}` +
+              (type.kind === 'euro' ? ` · ${priceLabel('euro', type.price * picked.size)}` : '')}
+        </button>
+      </form>
+
+      {recent.length > 0 && (
+        <section className="section">
+          <h2 className="section-title"><span className="section-icon">🕒</span>Ultime aggiunte</h2>
+          <div className="fine-list">
+            {recent.map((f) => {
+              const p = data.players.find((x) => x.id === f.player_id)
+              const t = data.fineTypes.find((x) => x.id === f.fine_type_id)
+              return (
+                <div key={f.id} className="fine-row">
+                  <div className="fine-date">{formatDate(f.date)}</div>
+                  <div className="fine-main"><b>{fullName(p)}</b><div className="fine-type">{t?.name}{f.note ? ` · ${f.note}` : ''}</div></div>
+                  <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
+                  <button className="btn btn-sm btn-ghost" onClick={() => run(() => api.deleteFines([f.id]), 'Multa annullata')}>Annulla</button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+    </>
+  )
+}
