@@ -89,7 +89,7 @@ export default function AllFines({ data, onPlayer }) {
   const [limit, setLimit] = useState(50)
   return (
     <section className="section">
-      <h2 className="section-title"><span className="section-icon">📜</span>Tutte le multe<span className="count-chip">{filtered.length}</span></h2>
+      <h2 className="section-title"><span className="section-icon">📜</span>Multe<span className="count-chip">{filtered.length}</span></h2>
       {controls}
       <FineList data={data} fines={filtered.slice(0, limit)} onPlayer={onPlayer} />
       {filtered.length > limit && (

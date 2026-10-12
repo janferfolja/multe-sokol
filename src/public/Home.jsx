@@ -48,7 +48,7 @@ export default function Home({ data, onPlayer }) {
       </div>
 
       <section className="section">
-        <h2 className="section-title"><span className="section-icon">🏆</span>Classifica multe</h2>
+        <h2 className="section-title"><span className="section-icon">🏆</span>Lestvica</h2>
         {totals.count === 0 ? (
           <p className="empty">Nessuna multa in questa stagione. Per ora.</p>
         ) : (

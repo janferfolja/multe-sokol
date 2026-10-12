@@ -34,8 +34,8 @@ export default function App() {
       </header>
 
       <nav className="top-nav">
-        <a href="#/" className={route === 'home' ? 'active' : ''}>Classifica</a>
-        <a href="#/multe" className={route === 'multe' ? 'active' : ''}>Tutte le multe</a>
+        <a href="#/" className={route === 'home' ? 'active' : ''}>Lestvica</a>
+        <a href="#/multe" className={route === 'multe' ? 'active' : ''}>Multe</a>
         <a href="#/admin" className={route === 'admin' ? 'active' : ''}>Admin</a>
       </nav>
 
