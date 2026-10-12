@@ -44,12 +44,12 @@ export default function App() {
 
       {isDemo && (
         <div className="demo-banner">
-          <span>Modalità demo: i dati sono salvati solo in questo browser. Collega Supabase per renderli condivisi.</span>
+          <span>Demo način: podatki so shranjeni samo v tem brskalniku. Poveži Supabase, da bodo skupni.</span>
         </div>
       )}
 
-      {error && <div className="error-box">Errore nel caricamento: {error} <button className="btn btn-sm" onClick={reload}>Riprova</button></div>}
-      {!data && !error && <div className="loading">Caricamento dati…</div>}
+      {error && <div className="error-box">Napaka pri nalaganju: {error} <button className="btn btn-sm" onClick={reload}>Poskusi znova</button></div>}
+      {!data && !error && <div className="loading">Nalagam podatke…</div>}
 
       {data && route === 'home' && <Home data={data} onPlayer={setOpenPlayer} />}
       {data && route === 'multe' && <AllFines data={data} onPlayer={setOpenPlayer} />}

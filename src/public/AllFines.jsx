@@ -5,7 +5,7 @@ import { formatDate, fullName, priceLabel, seasonOf, seasonsIn } from '../lib/st
 export function FineList({ data, fines, onPlayer, selectable, selected, onToggle, renderActions }) {
   const players = new Map(data.players.map((p) => [p.id, p]))
   const types = new Map(data.fineTypes.map((t) => [t.id, t]))
-  if (fines.length === 0) return <p className="empty">Nessuna multa trovata.</p>
+  if (fines.length === 0) return <p className="empty">Ni najdenih mult.</p>
   return (
     <div className="fine-list">
       {fines.map((f) => {
@@ -14,7 +14,7 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
         return (
           <div key={f.id} className={`fine-row ${selected?.has(f.id) ? 'selected' : ''}`}>
             {selectable && (
-              <input type="checkbox" checked={selected.has(f.id)} onChange={() => onToggle(f.id)} aria-label="Seleziona" />
+              <input type="checkbox" checked={selected.has(f.id)} onChange={() => onToggle(f.id)} aria-label="Izberi" />
             )}
             <div className="fine-date">{formatDate(f.date)}</div>
             <div className="fine-main">
@@ -22,7 +22,7 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
               <div className="fine-type">{t?.name}{f.note ? <span className="fine-note"> · {f.note}</span> : null}</div>
             </div>
             <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
-            <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Pagata' : 'In sospeso'}</div>
+            <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Plačano' : 'Neplačano'}</div>
             {renderActions?.(f)}
           </div>
         )
@@ -61,22 +61,22 @@ export function useFineFilters(data, { defaultStatus = 'all' } = {}) {
   const sortedPlayers = [...data.players].sort((a, b) => fullName(a).localeCompare(fullName(b)))
   const controls = (
     <div className="filters">
-      <input type="search" placeholder="Cerca…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <input type="search" placeholder="Išči…" value={q} onChange={(e) => setQ(e.target.value)} />
       <select value={player} onChange={(e) => setPlayer(e.target.value)}>
-        <option value="">Tutti i giocatori</option>
+        <option value="">Vsi igralci</option>
         {sortedPlayers.map((p) => <option key={p.id} value={p.id}>{fullName(p)}</option>)}
       </select>
       <select value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="">Tutti i tipi</option>
+        <option value="">Vse vrste</option>
         {data.fineTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
       </select>
       <select value={status} onChange={(e) => setStatus(e.target.value)}>
-        <option value="all">Tutti gli stati</option>
-        <option value="unpaid">In sospeso</option>
-        <option value="paid">Pagate</option>
+        <option value="all">Vsa stanja</option>
+        <option value="unpaid">Neplačane</option>
+        <option value="paid">Plačane</option>
       </select>
       <select value={season} onChange={(e) => setSeason(e.target.value)}>
-        <option value="">Tutte le stagioni</option>
+        <option value="">Vse sezone</option>
         {seasons.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
     </div>
@@ -93,7 +93,7 @@ export default function AllFines({ data, onPlayer }) {
       {controls}
       <FineList data={data} fines={filtered.slice(0, limit)} onPlayer={onPlayer} />
       {filtered.length > limit && (
-        <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Mostra altre</button>
+        <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Pokaži več</button>
       )}
     </section>
   )

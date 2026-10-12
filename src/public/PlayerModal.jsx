@@ -16,7 +16,7 @@ export default function PlayerModal({ data, playerId, onClose }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" role="dialog" aria-label={fullName(player)} onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Chiudi">×</button>
+        <button className="modal-close" onClick={onClose} aria-label="Zapri">×</button>
         <div className="modal-head">
           <div className="player-avatar player-avatar-lg">{initials(player)}</div>
           <div>
@@ -30,7 +30,7 @@ export default function PlayerModal({ data, playerId, onClose }) {
           <div className="stat-pill"><span className="stat-pill-label">Kasa</span><span className="stat-pill-value">{s.kasa}</span></div>
           <div className="stat-pill"><span className="stat-pill-label">Merenda</span><span className="stat-pill-value">{s.merenda}</span></div>
           <div className="stat-pill stat-pill-pending">
-            <span className="stat-pill-label">Da pagare</span>
+            <span className="stat-pill-label">Za plačat</span>
             <span className="stat-pill-value">{s.pending}{s.pendingEuro > 0 ? ` · ${formatEuro(s.pendingEuro)}` : ''}</span>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
-import { fullName, initials } from '../lib/stats'
+import { fullName, initials, multeN } from '../lib/stats'
 
 const EMPTY = { name: '', surname: '', alias: '', year: '', active: true }
 
@@ -13,10 +13,10 @@ export default function Players({ data, run }) {
   return (
     <section className="section">
       <h2 className="section-title">
-        <span className="section-icon">👥</span>Giocatori<span className="count-chip">{data.players.length}</span>
-        <button className="btn btn-sm btn-primary push-right" onClick={() => setEditing('new')}>+ Nuovo</button>
+        <span className="section-icon">👥</span>Igralci<span className="count-chip">{data.players.length}</span>
+        <button className="btn btn-sm btn-primary push-right" onClick={() => setEditing('new')}>+ Nov</button>
       </h2>
-      <p className="hint">I giocatori non attivi non compaiono tra quelli da multare, ma il loro storico resta.</p>
+      <p className="hint">Neaktivni igralci se ne prikažejo pri dodajanju mult, njihova zgodovina pa ostane.</p>
       {editing === 'new' && <PlayerForm initial={EMPTY} run={run} onDone={() => setEditing(null)} />}
       <div className="manage-list">
         {players.map((p) =>
@@ -29,10 +29,10 @@ export default function Players({ data, run }) {
                 <b>{fullName(p)}</b>
                 {p.alias && <span className="muted"> "{p.alias}"</span>}
                 {p.year && <span className="muted"> · {p.year}</span>}
-                {!p.active && <span className="tag">non attivo</span>}
+                {!p.active && <span className="tag">neaktiven</span>}
               </div>
-              <span className="muted">{counts.get(p.id) ?? 0} multe</span>
-              <button className="btn btn-sm btn-ghost" onClick={() => setEditing(p.id)}>Modifica</button>
+              <span className="muted">{multeN(counts.get(p.id) ?? 0)}</span>
+              <button className="btn btn-sm btn-ghost" onClick={() => setEditing(p.id)}>Uredi</button>
             </div>
           ),
         )}
@@ -52,23 +52,23 @@ function PlayerForm({ initial, run, onDone }) {
       name: form.name.trim(), surname: form.surname.trim(), alias: form.alias.trim() || null,
       year: form.year ? Number(form.year) : null, active: form.active,
     }
-    if (await run(() => api.savePlayer(p), form.id ? 'Giocatore aggiornato ✓' : 'Giocatore aggiunto ✓')) onDone()
+    if (await run(() => api.savePlayer(p), form.id ? 'Igralec posodobljen ✓' : 'Igralec dodan ✓')) onDone()
   }
 
   return (
     <form className="inline-form form" onSubmit={save}>
       <div className="form-row">
-        <label>Nome<input value={form.name} onChange={set('name')} required autoFocus /></label>
-        <label>Cognome<input value={form.surname} onChange={set('surname')} required /></label>
+        <label>Ime<input value={form.name} onChange={set('name')} required autoFocus /></label>
+        <label>Priimek<input value={form.surname} onChange={set('surname')} required /></label>
       </div>
       <div className="form-row">
-        <label>Soprannome<input value={form.alias} onChange={set('alias')} /></label>
-        <label>Anno<input type="number" min="1950" max={new Date().getFullYear()} value={form.year} onChange={set('year')} /></label>
+        <label>Vzdevek<input value={form.alias} onChange={set('alias')} /></label>
+        <label>Letnik<input type="number" min="1950" max={new Date().getFullYear()} value={form.year} onChange={set('year')} /></label>
       </div>
-      <label className="check"><input type="checkbox" checked={form.active} onChange={set('active')} /> Attivo</label>
+      <label className="check"><input type="checkbox" checked={form.active} onChange={set('active')} /> Aktiven</label>
       <div className="form-actions">
-        <button type="button" className="btn btn-ghost" onClick={onDone}>Annulla</button>
-        <button className="btn btn-primary">Salva</button>
+        <button type="button" className="btn btn-ghost" onClick={onDone}>Prekliči</button>
+        <button className="btn btn-primary">Shrani</button>
       </div>
     </form>
   )

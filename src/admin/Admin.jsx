@@ -8,11 +8,11 @@ import Players from './Players'
 import FineTypes from './FineTypes'
 
 const TABS = [
-  ['new', '➕ Nuove multe'],
-  ['pay', '💶 Pagamenti'],
-  ['history', '📜 Storico'],
-  ['players', '👥 Giocatori'],
-  ['types', '📋 Tipi multa'],
+  ['new', '➕ Nove multe'],
+  ['pay', '💶 Plačila'],
+  ['history', '📜 Zgodovina'],
+  ['players', '👥 Igralci'],
+  ['types', '📋 Vrste mult'],
 ]
 
 export default function Admin({ data, reload }) {
@@ -49,19 +49,19 @@ export default function Admin({ data, reload }) {
       setToast({ kind: 'ok', text: message })
       return true
     } catch (e) {
-      setToast({ kind: 'err', text: `Errore: ${e.message}` })
+      setToast({ kind: 'err', text: `Napaka: ${e.message}` })
       return false
     }
   }
 
-  if (user === undefined) return <div className="loading">Verifica accesso…</div>
+  if (user === undefined) return <div className="loading">Preverjam dostop…</div>
   if (!user) return <Login />
   if (!admin) {
     return (
       <section className="section narrow">
-        <h2 className="section-title">Accesso negato</h2>
-        <p><b>{user.email}</b> non è tra gli admin. Chiedi a un admin di aggiungerti.</p>
-        <button className="btn" onClick={() => api.signOut()}>Esci</button>
+        <h2 className="section-title">Dostop zavrnjen</h2>
+        <p><b>{user.email}</b> ni med admini. Prosi admina, naj te doda.</p>
+        <button className="btn" onClick={() => api.signOut()}>Odjava</button>
       </section>
     )
   }
@@ -70,8 +70,8 @@ export default function Admin({ data, reload }) {
   return (
     <>
       <div className="admin-bar">
-        <span>Connesso come <b>{user.email}</b></span>
-        <button className="btn btn-sm btn-ghost" onClick={() => api.signOut()}>Esci</button>
+        <span>Prijavljen kot <b>{user.email}</b></span>
+        <button className="btn btn-sm btn-ghost" onClick={() => api.signOut()}>Odjava</button>
       </div>
       <div className="tabs" role="tablist">
         {TABS.map(([id, label]) => (
@@ -109,20 +109,20 @@ function Login() {
 
   return (
     <section className="section narrow">
-      <h2 className="section-title"><span className="section-icon">🔐</span>Accesso admin</h2>
+      <h2 className="section-title"><span className="section-icon">🔐</span>Prijava za admine</h2>
       {state === 'sent' && !isDemo ? (
-        <p>Controlla la tua email <b>{email}</b> e apri il link per accedere.</p>
+        <p>Preveri e-pošto <b>{email}</b> in odpri povezavo za prijavo.</p>
       ) : (
         <form onSubmit={submit} className="form">
           <label>
-            Email
+            E-pošta
             <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </label>
           <button className="btn btn-primary" disabled={state === 'sending'}>
-            {isDemo ? 'Entra (demo)' : state === 'sending' ? 'Invio…' : 'Inviami il link'}
+            {isDemo ? 'Vstopi (demo)' : state === 'sending' ? 'Pošiljam…' : 'Pošlji mi povezavo'}
           </button>
           {state === 'error' && <p className="form-error">{error}</p>}
-          <p className="hint">{isDemo ? 'In modalità demo basta qualsiasi email.' : 'Ti mandiamo un link di accesso via email: niente password.'}</p>
+          <p className="hint">{isDemo ? 'V demo načinu deluje katerikoli e-naslov.' : 'Po e-pošti ti pošljemo povezavo za prijavo, brez gesla.'}</p>
         </form>
       )}
     </section>

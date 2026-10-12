@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
-  PODIUM_TITLES, daysSince, formatDate, formatEuro, fullName, initials,
+  PODIUM_TITLES, daysSince, multeN, multeWord, formatDate, formatEuro, fullName, initials,
   playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
 
@@ -20,27 +20,27 @@ export default function Home({ data, onPlayer }) {
       <Overdue data={data} onPlayer={onPlayer} />
 
       <div className="season-bar">
-        <label htmlFor="season">Stagione</label>
+        <label htmlFor="season">Sezona</label>
         <select id="season" value={season} onChange={(e) => setSeason(e.target.value)}>
           {seasons.map((s) => <option key={s} value={s}>{s}</option>)}
-          <option value="all">Tutte</option>
+          <option value="all">Vse</option>
         </select>
       </div>
 
       <div className="stats-total">
         <div className="stats-total-left">
-          <h3>Totale squadra</h3>
+          <h3>Skupaj ekipa</h3>
           <div className="stats-total-numbers">
             <Pill label="Multe" value={totals.count} />
             <Pill label="Euro" value={formatEuro(totals.euro)} gold />
             <Pill label="Kasa" value={totals.kasa} />
             <Pill label="Merenda" value={totals.merenda} />
-            <Pill label="In sospeso" value={totals.pending} warn />
+            <Pill label="Neplačano" value={totals.pending} warn />
           </div>
         </div>
         {totals.sponsor && (
           <button className="sponsor-badge" onClick={() => onPlayer(totals.sponsor.player.id)}>
-            <span className="sponsor-label">💰 Sponsor ufficiale</span>
+            <span className="sponsor-label">💰 Uradni sponzor</span>
             <span className="sponsor-name">{fullName(totals.sponsor.player)}</span>
             <span className="sponsor-amount">{formatEuro(totals.sponsor.euro)}</span>
           </button>
@@ -50,7 +50,7 @@ export default function Home({ data, onPlayer }) {
       <section className="section">
         <h2 className="section-title"><span className="section-icon">🏆</span>Lestvica</h2>
         {totals.count === 0 ? (
-          <p className="empty">Nessuna multa in questa stagione. Per ora.</p>
+          <p className="empty">V tej sezoni še ni mult. Zaenkrat.</p>
         ) : (
           <>
             <Podium stats={stats.slice(0, 3)} onPlayer={onPlayer} />
@@ -87,7 +87,7 @@ function Overdue({ data, onPlayer }) {
 
   return (
     <section className="upcoming-multe">
-      <h3><span className="section-icon">🔥</span>Da recuperare<span className="count-chip">{unpaid.length}</span></h3>
+      <h3><span className="section-icon">🔥</span>Za plačat<span className="count-chip">{unpaid.length}</span></h3>
       <div className="upcoming-multe-list">
         {shown.map((f) => {
           const p = players.get(f.player_id)
@@ -110,7 +110,7 @@ function Overdue({ data, onPlayer }) {
       </div>
       {unpaid.length > 5 && (
         <button className="btn btn-ghost btn-block" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Mostra meno' : `Mostra tutte (${unpaid.length})`}
+          {expanded ? 'Pokaži manj' : `Pokaži vse (${unpaid.length})`}
         </button>
       )}
     </section>
@@ -133,9 +133,9 @@ function Podium({ stats, onPlayer }) {
               {s.player.alias && <div className="podium-alias">"{s.player.alias}"</div>}
               <div className="podium-title">{PODIUM_TITLES[i]}</div>
               <div className="podium-stats">
-                <span>{s.count} multe</span><span className="podium-stats-sep">·</span><span>{formatEuro(s.euro)}</span>
+                <span>{multeN(s.count)}</span><span className="podium-stats-sep">·</span><span>{formatEuro(s.euro)}</span>
               </div>
-              {s.pending > 0 && <div className="podium-pending">⚠ {s.pending} in sospeso</div>}
+              {s.pending > 0 && <div className="podium-pending">⚠ Neplačano: {s.pending}</div>}
             </div>
             <div className="podium-pedestal"><span className="podium-rank">{i + 1}</span></div>
           </button>
@@ -160,7 +160,7 @@ function PlayerCard({ s, max, onPlayer }) {
         </div>
         <div className="player-card-count">
           <span className="player-card-count-num">{s.count}</span>
-          <span className="player-card-count-label">multe</span>
+          <span className="player-card-count-label">{multeWord(s.count)}</span>
         </div>
       </div>
       <div className="player-card-stats">
@@ -169,7 +169,7 @@ function PlayerCard({ s, max, onPlayer }) {
         {s.merenda > 0 && <Row label="Merenda" value={s.merenda} />}
       </div>
       <div className="player-card-bar"><div className="player-card-bar-fill" style={{ width: `${ratio * 100}%` }} /></div>
-      {s.pending > 0 && <div className="player-card-pending">⚠ {s.pending} in sospeso</div>}
+      {s.pending > 0 && <div className="player-card-pending">⚠ Neplačano: {s.pending}</div>}
     </button>
   )
 }
@@ -181,13 +181,13 @@ const Row = ({ label, value }) => (
 function Legend({ fineTypes }) {
   const active = fineTypes.filter((t) => t.active)
   const groups = [
-    ['euro', '💶 Multe in euro'],
+    ['euro', '💶 Multe v evrih'],
     ['kasa', '🍺 Kasa'],
     ['merenda', '🍕 Merenda'],
   ]
   return (
     <section className="section">
-      <h2 className="section-title"><span className="section-icon">📋</span>Legenda multe</h2>
+      <h2 className="section-title"><span className="section-icon">📋</span>Legenda mult</h2>
       <div className="legend-groups">
         {groups.map(([kind, title]) => (
           <div key={kind} className="legend-group">

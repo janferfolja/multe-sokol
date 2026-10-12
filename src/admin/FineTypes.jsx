@@ -13,10 +13,10 @@ export default function FineTypes({ data, run }) {
   return (
     <section className="section">
       <h2 className="section-title">
-        <span className="section-icon">📋</span>Tipi di multa<span className="count-chip">{data.fineTypes.length}</span>
-        <button className="btn btn-sm btn-primary push-right" onClick={() => setEditing('new')}>+ Nuovo</button>
+        <span className="section-icon">📋</span>Vrste mult<span className="count-chip">{data.fineTypes.length}</span>
+        <button className="btn btn-sm btn-primary push-right" onClick={() => setEditing('new')}>+ Nova</button>
       </h2>
-      <p className="hint">Cambiare un prezzo vale solo per le multe nuove: quelle già date restano al prezzo di allora.</p>
+      <p className="hint">Sprememba cene velja samo za nove multe: že dane ostanejo po stari ceni.</p>
       {editing === 'new' && <TypeForm initial={EMPTY} run={run} onDone={() => setEditing(null)} />}
       {KINDS.map(([kind, title]) => (
         <div key={kind} className="manage-group">
@@ -27,10 +27,10 @@ export default function FineTypes({ data, run }) {
                 <TypeForm key={t.id} initial={{ ...t, price: t.price ?? '' }} run={run} onDone={() => setEditing(null)} />
               ) : (
                 <div key={t.id} className={`manage-row ${t.active ? '' : 'inactive'}`}>
-                  <div className="grow">{t.name}{!t.active && <span className="tag">non attivo</span>}</div>
+                  <div className="grow">{t.name}{!t.active && <span className="tag">neaktivna</span>}</div>
                   <span className="muted">{counts.get(t.id) ?? 0}×</span>
                   <span className={`legend-price legend-${kind}`}>{priceLabel(kind, t.price)}</span>
-                  <button className="btn btn-sm btn-ghost" onClick={() => setEditing(t.id)}>Modifica</button>
+                  <button className="btn btn-sm btn-ghost" onClick={() => setEditing(t.id)}>Uredi</button>
                 </div>
               ),
             )}
@@ -52,26 +52,26 @@ function TypeForm({ initial, run, onDone }) {
       name: form.name.trim(), kind: form.kind,
       price: form.kind === 'euro' ? Number(form.price) : null, active: form.active,
     }
-    if (await run(() => api.saveFineType(t), form.id != null ? 'Tipo aggiornato ✓' : 'Tipo aggiunto ✓')) onDone()
+    if (await run(() => api.saveFineType(t), form.id != null ? 'Vrsta posodobljena ✓' : 'Vrsta dodana ✓')) onDone()
   }
 
   return (
     <form className="inline-form form" onSubmit={save}>
-      <label>Nome<input value={form.name} onChange={set('name')} required autoFocus /></label>
+      <label>Ime<input value={form.name} onChange={set('name')} required autoFocus /></label>
       <div className="form-row">
-        <label>Tipo
+        <label>Vrsta
           <select value={form.kind} onChange={set('kind')}>
             {KINDS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
           </select>
         </label>
         {form.kind === 'euro' && (
-          <label>Prezzo €<input type="number" min="0" step="0.5" value={form.price} onChange={set('price')} required /></label>
+          <label>Cena €<input type="number" min="0" step="0.5" value={form.price} onChange={set('price')} required /></label>
         )}
       </div>
-      <label className="check"><input type="checkbox" checked={form.active} onChange={set('active')} /> Attivo (visibile in legenda e tra le multe)</label>
+      <label className="check"><input type="checkbox" checked={form.active} onChange={set('active')} /> Aktivna (vidna v legendi in pri dodajanju)</label>
       <div className="form-actions">
-        <button type="button" className="btn btn-ghost" onClick={onDone}>Annulla</button>
-        <button className="btn btn-primary">Salva</button>
+        <button type="button" className="btn btn-ghost" onClick={onDone}>Prekliči</button>
+        <button className="btn btn-primary">Shrani</button>
       </div>
     </form>
   )

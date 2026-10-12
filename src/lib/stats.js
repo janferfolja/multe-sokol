@@ -4,7 +4,7 @@ export const initials = (p) => (p ? `${p.name[0] ?? ''}${p.surname[0] ?? ''}`.to
 export const priceLabel = (kind, price) =>
   kind === 'euro' ? `${formatEuro(price)}` : kind === 'kasa' ? 'KASA' : 'MERENDA'
 
-export const formatEuro = (n) => `${Number(n ?? 0).toLocaleString('it-IT', { maximumFractionDigits: 2 })}€`
+export const formatEuro = (n) => `${Number(n ?? 0).toLocaleString('sl-SI', { maximumFractionDigits: 2 })}€`
 
 export const formatDate = (iso) => {
   const [y, m, d] = iso.split('-')
@@ -55,3 +55,10 @@ export const seasonOf = (iso) => {
 }
 
 export const seasonsIn = (fines) => [...new Set(fines.map((f) => seasonOf(f.date)))].sort().reverse()
+
+// Slovenian plural: 1 multa, 2 multi, 3–4 multe, 5+ mult (also 101, 102, …).
+export const multeWord = (n) => {
+  const m = n % 100
+  return m === 1 ? 'multa' : m === 2 ? 'multi' : m === 3 || m === 4 ? 'multe' : 'mult'
+}
+export const multeN = (n) => `${n} ${multeWord(n)}`

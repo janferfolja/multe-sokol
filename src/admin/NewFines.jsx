@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, priceLabel, todayISO } from '../lib/stats'
+import { formatDate, fullName, initials, multeN, priceLabel, todayISO } from '../lib/stats'
 
 // Add one fine type to one or more players in one go.
 export default function NewFines({ data, run }) {
@@ -35,7 +35,7 @@ export default function NewFines({ data, run }) {
     setBusy(true)
     const rows = [...picked].map((player_id) => ({ player_id, fine_type_id: type.id, date, note: note.trim() || null }))
     const n = rows.length
-    const ok = await run(() => api.addFines(rows), `${n} ${n === 1 ? 'multa aggiunta' : 'multe aggiunte'} ✓`)
+    const ok = await run(() => api.addFines(rows), `Dodano: ${multeN(n)} ✓`)
     setBusy(false)
     if (ok) {
       setPicked(new Set())
@@ -54,13 +54,13 @@ export default function NewFines({ data, run }) {
       <form className="section form" onSubmit={submit}>
         <div className="form-row">
           <label>
-            Data
+            Datum
             <input type="date" value={date} max={todayISO()} onChange={(e) => setDate(e.target.value)} required />
           </label>
           <label className="grow">
             Multa
             <select value={typeId} onChange={(e) => setTypeId(e.target.value)} required>
-              <option value="">— scegli —</option>
+              <option value="">— izberi —</option>
               {['euro', 'kasa', 'merenda'].map((kind) => (
                 <optgroup key={kind} label={kind === 'euro' ? 'Euro' : kind.toUpperCase()}>
                   {types.filter((t) => t.kind === kind).map((t) => (
@@ -74,10 +74,10 @@ export default function NewFines({ data, run }) {
 
         <fieldset className="player-picker">
           <legend>
-            Giocatori <span className="count-chip">{picked.size}</span>
-            {picked.size > 0 && <button type="button" className="link small" onClick={() => setPicked(new Set())}>azzera</button>}
+            Igralci <span className="count-chip">{picked.size}</span>
+            {picked.size > 0 && <button type="button" className="link small" onClick={() => setPicked(new Set())}>počisti</button>}
           </legend>
-          <input type="search" placeholder="Filtra giocatori…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input type="search" placeholder="Išči igralce…" value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="chips">
             {visible.map((p) => (
               <button
@@ -93,21 +93,21 @@ export default function NewFines({ data, run }) {
         </fieldset>
 
         <label>
-          Nota (facoltativa)
-          <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="es. allenamento martedì, foto nel gruppo…" />
+          Opomba (neobvezno)
+          <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="npr. trening v torek, slika v skupini…" />
         </label>
 
         <button className="btn btn-primary btn-lg" disabled={busy || !type || picked.size === 0}>
           {picked.size === 0 || !type
-            ? 'Scegli multa e giocatori'
-            : `Aggiungi ${picked.size} ${picked.size === 1 ? 'multa' : 'multe'}` +
+            ? 'Izberi multo in igralce'
+            : `Dodaj ${multeN(picked.size)}` +
               (type.kind === 'euro' ? ` · ${priceLabel('euro', type.price * picked.size)}` : '')}
         </button>
       </form>
 
       {recent.length > 0 && (
         <section className="section">
-          <h2 className="section-title"><span className="section-icon">🕒</span>Ultime aggiunte</h2>
+          <h2 className="section-title"><span className="section-icon">🕒</span>Zadnje dodane</h2>
           <div className="fine-list">
             {recent.map((f) => {
               const p = data.players.find((x) => x.id === f.player_id)
@@ -117,7 +117,7 @@ export default function NewFines({ data, run }) {
                   <div className="fine-date">{formatDate(f.date)}</div>
                   <div className="fine-main"><b>{fullName(p)}</b><div className="fine-type">{t?.name}{f.note ? ` · ${f.note}` : ''}</div></div>
                   <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
-                  <button className="btn btn-sm btn-ghost" onClick={() => run(() => api.deleteFines([f.id]), 'Multa annullata')}>Annulla</button>
+                  <button className="btn btn-sm btn-ghost" onClick={() => run(() => api.deleteFines([f.id]), 'Multa razveljavljena')}>Razveljavi</button>
                 </div>
               )
             })}

@@ -10,13 +10,13 @@ export default function History({ data, run }) {
 
   const actions = (f) => (
     <div className="row-actions">
-      <button className="btn btn-sm btn-ghost" title={f.paid ? 'Segna come non pagata' : 'Segna come pagata'}
-        onClick={() => run(() => api.setPaid([f.id], !f.paid), f.paid ? 'Segnata come non pagata' : 'Segnata come pagata ✓')}>
+      <button className="btn btn-sm btn-ghost" title={f.paid ? 'Označi kot neplačano' : 'Označi kot plačano'}
+        onClick={() => run(() => api.setPaid([f.id], !f.paid), f.paid ? 'Označeno kot neplačano' : 'Označeno kot plačano ✓')}>
         {f.paid ? '↩︎' : '✓'}
       </button>
-      <button className="btn btn-sm btn-ghost" title="Modifica" onClick={() => setEditing(f)}>✎</button>
-      <button className="btn btn-sm btn-ghost btn-danger" title="Elimina"
-        onClick={() => confirm('Eliminare questa multa?') && run(() => api.deleteFines([f.id]), 'Multa eliminata')}>
+      <button className="btn btn-sm btn-ghost" title="Uredi" onClick={() => setEditing(f)}>✎</button>
+      <button className="btn btn-sm btn-ghost btn-danger" title="Izbriši"
+        onClick={() => confirm('Izbrišem to multo?') && run(() => api.deleteFines([f.id]), 'Multa izbrisana')}>
         🗑
       </button>
     </div>
@@ -24,10 +24,10 @@ export default function History({ data, run }) {
 
   return (
     <section className="section">
-      <h2 className="section-title"><span className="section-icon">📜</span>Storico<span className="count-chip">{filtered.length}</span></h2>
+      <h2 className="section-title"><span className="section-icon">📜</span>Zgodovina<span className="count-chip">{filtered.length}</span></h2>
       {controls}
       <FineList data={data} fines={filtered.slice(0, limit)} renderActions={actions} />
-      {filtered.length > limit && <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Mostra altre</button>}
+      {filtered.length > limit && <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Pokaži več</button>}
       {editing && <EditFine data={data} fine={editing} run={run} onClose={() => setEditing(null)} />}
     </section>
   )
@@ -52,15 +52,15 @@ function EditFine({ data, fine, run, onClose }) {
     if (type.kind !== 'euro') patch.amount = null
     else if (typeChanged) patch.amount = type.price
     else if (form.amount !== '') patch.amount = Number(form.amount)
-    if (await run(() => api.updateFine(fine.id, patch), 'Multa aggiornata ✓')) onClose()
+    if (await run(() => api.updateFine(fine.id, patch), 'Multa posodobljena ✓')) onClose()
   }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <form className="modal form" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-        <button type="button" className="modal-close" onClick={onClose} aria-label="Chiudi">×</button>
-        <h2>Modifica multa #{fine.id}</h2>
-        <label>Giocatore
+        <button type="button" className="modal-close" onClick={onClose} aria-label="Zapri">×</button>
+        <h2>Uredi multo #{fine.id}</h2>
+        <label>Igralec
           <select value={form.player_id} onChange={set('player_id')}>
             {[...data.players].sort((a, b) => fullName(a).localeCompare(fullName(b))).map((p) => <option key={p.id} value={p.id}>{fullName(p)}</option>)}
           </select>
@@ -71,16 +71,16 @@ function EditFine({ data, fine, run, onClose }) {
           </select>
         </label>
         <div className="form-row">
-          <label>Data<input type="date" value={form.date} onChange={set('date')} required /></label>
+          <label>Datum<input type="date" value={form.date} onChange={set('date')} required /></label>
           {type?.kind === 'euro' && !typeChanged && (
-            <label>Importo €<input type="number" min="0" step="0.5" value={form.amount} onChange={set('amount')} /></label>
+            <label>Znesek €<input type="number" min="0" step="0.5" value={form.amount} onChange={set('amount')} /></label>
           )}
         </div>
-        <label>Nota<input type="text" value={form.note} onChange={set('note')} /></label>
-        <label className="check"><input type="checkbox" checked={form.paid} onChange={set('paid')} /> Pagata</label>
+        <label>Opomba<input type="text" value={form.note} onChange={set('note')} /></label>
+        <label className="check"><input type="checkbox" checked={form.paid} onChange={set('paid')} /> Plačano</label>
         <div className="form-actions">
-          <button type="button" className="btn btn-ghost" onClick={onClose}>Annulla</button>
-          <button className="btn btn-primary">Salva</button>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>Prekliči</button>
+          <button className="btn btn-primary">Shrani</button>
         </div>
       </form>
     </div>

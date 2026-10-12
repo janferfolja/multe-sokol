@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatEuro, fullName, playerStats } from '../lib/stats'
+import { formatEuro, fullName, multeN, playerStats } from '../lib/stats'
 import { FineList, useFineFilters } from '../public/AllFines'
 
 export default function Payments({ data, run }) {
@@ -27,23 +27,23 @@ export default function Payments({ data, run }) {
   return (
     <>
       <section className="section">
-        <h2 className="section-title"><span className="section-icon">🧾</span>Chi deve pagare<span className="count-chip">{debtors.length}</span></h2>
-        {debtors.length === 0 ? <p className="empty">Tutti in regola. 🎉</p> : (
+        <h2 className="section-title"><span className="section-icon">🧾</span>Kdo mora plačat<span className="count-chip">{debtors.length}</span></h2>
+        {debtors.length === 0 ? <p className="empty">Vsi so plačali. 🎉</p> : (
           <div className="debtors">
             {debtors.map((s) => (
               <div key={s.player.id} className="debtor-row">
                 <div className="grow"><b>{fullName(s.player)}</b>{s.player.alias && <span className="muted"> "{s.player.alias}"</span>}</div>
-                <div className="muted">{s.pending} {s.pending === 1 ? 'multa' : 'multe'}</div>
+                <div className="muted">{multeN(s.pending)}</div>
                 <div className="debtor-amount">{s.pendingEuro > 0 ? formatEuro(s.pendingEuro) : '—'}</div>
                 <button
                   className="btn btn-sm"
                   onClick={() => {
-                    if (confirm(`Segnare come pagate tutte le ${s.pending} multe di ${fullName(s.player)}?`)) {
-                      markPaid(playerUnpaidIds(s.player.id), `${fullName(s.player)} in regola ✓`)
+                    if (confirm(`Označim vse neplačane multe (${s.pending}) igralca ${fullName(s.player)} kot plačane?`)) {
+                      markPaid(playerUnpaidIds(s.player.id), `${fullName(s.player)}: vse plačano ✓`)
                     }
                   }}
                 >
-                  Tutto pagato
+                  Vse plačano
                 </button>
               </div>
             ))}
@@ -52,16 +52,16 @@ export default function Payments({ data, run }) {
       </section>
 
       <section className="section">
-        <h2 className="section-title"><span className="section-icon">☑️</span>Singole multe da pagare</h2>
+        <h2 className="section-title"><span className="section-icon">☑️</span>Posamezne neplačane multe</h2>
         {controls}
         <div className="bulk-bar">
-          <label className="check"><input type="checkbox" checked={allSelected} onChange={toggleAll} /> Seleziona tutte ({filtered.length})</label>
+          <label className="check"><input type="checkbox" checked={allSelected} onChange={toggleAll} /> Izberi vse ({filtered.length})</label>
           <button
             className="btn btn-primary"
             disabled={selected.size === 0}
-            onClick={() => markPaid([...selected], `${selected.size} ${selected.size === 1 ? 'multa pagata' : 'multe pagate'} ✓`)}
+            onClick={() => markPaid([...selected], `Plačano: ${multeN(selected.size)} ✓`)}
           >
-            Segna {selected.size || ''} come pagate
+            Označi kot plačano{selected.size ? ` (${selected.size})` : ''}
           </button>
         </div>
         <FineList data={data} fines={filtered} selectable selected={selected} onToggle={toggle} />

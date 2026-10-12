@@ -37,10 +37,10 @@ For local development against the real database, copy `.env.example` to `.env.lo
 
 ## Daily use
 
-- **Admin → Nuove multe:** pick a date and a fine type, tap every player who earned it, then press *Aggiungi*. *Ultime aggiunte* lets you undo mistakes.
-- **Admin → Pagamenti:** *Tutto pagato* settles a player in one go, or tick individual fines and mark them paid.
-- **Admin → Storico:** edit, un-pay or delete any fine.
-- **Admin → Giocatori / Tipi multa:** add players or fine types and change prices. A price change only affects new fines; each fine keeps the amount it was given with.
+- **Admin → Nove multe:** pick a date and a fine type, tap every player who earned it, then press *Dodaj*. *Zadnje dodane* lets you undo mistakes.
+- **Admin → Plačila:** *Vse plačano* settles a player in one go, or tick individual fines and mark them paid.
+- **Admin → Zgodovina:** edit, un-pay or delete any fine.
+- **Admin → Igralci / Vrste mult:** add players or fine types and change prices. A price change only affects new fines; each fine keeps the amount it was given with.
 
 Adding another admin later is the same `insert into public.admins …` line.
 
