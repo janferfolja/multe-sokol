@@ -49,7 +49,7 @@ export default function App() {
       )}
 
       {error && <div className="error-box">Napaka pri nalaganju: {error} <button className="btn btn-sm" onClick={reload}>Poskusi znova</button></div>}
-      {!data && !error && <div className="loading">Nalagam podatke…</div>}
+      {!data && !error && route !== 'app' && <div className="loading">Nalagam podatke…</div>}
 
       {data && route === 'home' && <Home data={data} onPlayer={setOpenPlayer} />}
       {data && route === 'multe' && <AllFines data={data} onPlayer={setOpenPlayer} />}
