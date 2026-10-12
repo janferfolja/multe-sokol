@@ -440,3 +440,7 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
   .form label { font-size: 0.8em; }
   .fine-date { font-size: 0.8em; }
 }
+@media (max-width: 600px) {
+  .stats-total-numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 8px; }
+  .stat-pill { border-right: 0; padding: 0; min-width: 0; }
+}
