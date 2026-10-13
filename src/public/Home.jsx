@@ -58,7 +58,7 @@ export default function Home({ data, onPlayer }) {
       <section className="section">
         <h2 className="section-title"><span className="section-icon">🏆</span>Lestvica</h2>
         {totals.count === 0 ? (
-          <p className="empty">V tej sezoni še ni nobene multe. Zaenkrat.</p>
+          <p className="empty">V tej sezoni še ni nobene multe. Z zdej.</p>
         ) : (
           <>
             <Podium stats={stats.slice(0, 3)} onPlayer={onPlayer} />
