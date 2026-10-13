@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, isDemo } from '../lib/api'
-import { go } from '../lib/router'
+import { authLinkType, go } from '../lib/router'
 import NewFines from './NewFines'
 import Payments from './Payments'
 import History from './History'
@@ -30,7 +30,7 @@ export default function Admin({ data, reload }) {
       if (!alive) return
       setUser(u)
       setAdmin(ok)
-      if (u && new URLSearchParams(window.location.search).has('admin')) go('admin')
+      if (u && (authLinkType || new URLSearchParams(window.location.search).has('admin'))) go('admin')
     }
     api.getUser().then(update)
     const off = api.onAuthChange(update)
@@ -135,8 +135,16 @@ function Login() {
   )
 }
 
+// Opens by itself after an invite / password-reset link, since those log in without a password.
+const mustSetPassword = authLinkType === 'invite' || authLinkType === 'recovery'
+let promptPending = mustSetPassword
+
 function ChangePassword({ run }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(() => {
+    const show = promptPending
+    promptPending = false
+    return show
+  })
   const [pw, setPw] = useState('')
   const [pw2, setPw2] = useState('')
   const mismatch = pw2 !== '' && pw !== pw2
@@ -158,7 +166,8 @@ function ChangePassword({ run }) {
         <div className="modal-backdrop" onClick={() => setOpen(false)}>
           <form className="modal form narrow-modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
             <button type="button" className="modal-close" onClick={() => setOpen(false)} aria-label="Zapri">×</button>
-            <h2>Novo geslo</h2>
+            <h2>{mustSetPassword ? 'Nastavi si geslo' : 'Novo geslo'}</h2>
+            {mustSetPassword && <p className="hint">Z njim se boš naslednjič prijavil v Admin.</p>}
             <label>Novo geslo (vsaj 8 znakov)
               <input type="password" autoComplete="new-password" minLength={8} required value={pw} onChange={(e) => setPw(e.target.value)} />
             </label>
