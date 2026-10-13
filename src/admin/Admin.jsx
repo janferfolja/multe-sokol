@@ -14,7 +14,7 @@ const TABS = [
   ['pay', '💶 Plačila'],
   ['history', '📜 Zgodovina'],
   ['players', '👥 Igralci'],
-  ['types', '📋 Vrste multe'],
+  ['types', '📋 Vrste mult'],
 ]
 
 export default function Admin({ data, reload }) {

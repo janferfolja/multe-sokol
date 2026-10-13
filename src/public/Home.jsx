@@ -196,7 +196,7 @@ function Legend({ fineTypes }) {
   ]
   return (
     <section className="section">
-      <h2 className="section-title"><span className="section-icon">📋</span>Legenda multe</h2>
+      <h2 className="section-title"><span className="section-icon">📋</span>Legenda mult</h2>
       <div className="legend-groups">
         {groups.map(([kind, title]) => (
           <div key={kind} className="legend-group">

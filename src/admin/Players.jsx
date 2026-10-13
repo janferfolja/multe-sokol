@@ -16,7 +16,7 @@ export default function Players({ data, run }) {
         <span className="section-icon">👥</span>Igralci<span className="count-chip">{data.players.length}</span>
         <button className="btn btn-sm btn-primary push-right" onClick={() => setEditing('new')}>+ Nov</button>
       </h2>
-      <p className="hint">Neaktivni igralci se ne prikažejo pri dodajanju multe, njihova zgodovina pa ostane.</p>
+      <p className="hint">Neaktivni igralci se ne prikažejo pri dodajanju mult, njihova zgodovina pa ostane.</p>
       {editing === 'new' && <PlayerForm initial={EMPTY} run={run} onDone={() => setEditing(null)} />}
       <div className="manage-list">
         {players.map((p) =>

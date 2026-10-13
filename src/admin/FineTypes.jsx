@@ -13,7 +13,7 @@ export default function FineTypes({ data, run }) {
   return (
     <section className="section">
       <h2 className="section-title">
-        <span className="section-icon">📋</span>Vrste multe<span className="count-chip">{data.fineTypes.length}</span>
+        <span className="section-icon">📋</span>Vrste mult<span className="count-chip">{data.fineTypes.length}</span>
         <button className="btn btn-sm btn-primary push-right" onClick={() => setEditing('new')}>+ Nova</button>
       </h2>
       <p className="hint">Sprememba cene velja samo za nove multe: že dane ostanejo po stari ceni.</p>
