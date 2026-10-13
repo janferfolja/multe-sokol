@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatEuro, fullName, multeN, playerStats } from '../lib/stats'
+import { formatEuro, fullName, multeN, playerStats, plural } from '../lib/stats'
 import { FineList, useFineFilters } from '../public/AllFines'
 
 export default function Payments({ data, run }) {
@@ -38,7 +38,7 @@ export default function Payments({ data, run }) {
                 <button
                   className="btn btn-sm"
                   onClick={() => {
-                    if (confirm(`Označim vse neplačane multe (${s.pending}) igralca ${fullName(s.player)} kot plačane?`)) {
+                    if (confirm(plural(s.pending, `Označim neplačano multo igralca ${fullName(s.player)} kot plačano?`, `Označim vse neplačane multe (${s.pending}) igralca ${fullName(s.player)} kot plačane?`))) {
                       markPaid(playerUnpaidIds(s.player.id), `${fullName(s.player)}: vse plačano ✓`)
                     }
                   }}
@@ -59,9 +59,9 @@ export default function Payments({ data, run }) {
           <button
             className="btn btn-primary"
             disabled={selected.size === 0}
-            onClick={() => markPaid([...selected], `Plačano: ${multeN(selected.size)} ✓`)}
+            onClick={() => markPaid([...selected], `${multeN(selected.size)} ${plural(selected.size, 'plačana', 'plačane')} ✓`)}
           >
-            Označi kot plačano{selected.size ? ` (${selected.size})` : ''}
+            {selected.size ? `Označi kot ${plural(selected.size, 'plačano', 'plačane')} (${selected.size})` : 'Označi kot plačane'}
           </button>
         </div>
         <FineList data={data} fines={filtered} selectable selected={selected} onToggle={toggle} />

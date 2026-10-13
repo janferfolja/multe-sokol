@@ -6,7 +6,7 @@ import Donations from './Donations'
 export function FineList({ data, fines, onPlayer, selectable, selected, onToggle, renderActions }) {
   const players = new Map(data.players.map((p) => [p.id, p]))
   const types = new Map(data.fineTypes.map((t) => [t.id, t]))
-  if (fines.length === 0) return <p className="empty">Ni najdenih mult.</p>
+  if (fines.length === 0) return <p className="empty">Nobena multa ne ustreza.</p>
   return (
     <div className="fine-list">
       {fines.map((f) => {
@@ -23,7 +23,7 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
               <div className="fine-type">{t?.name}{f.note ? <span className="fine-note"> · {f.note}</span> : null}</div>
             </div>
             <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
-            <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Plačano' : 'Neplačano'}</div>
+            <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Plačana' : 'Neplačana'}</div>
             {renderActions?.(f)}
           </div>
         )

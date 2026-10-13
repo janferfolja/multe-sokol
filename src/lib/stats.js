@@ -56,11 +56,9 @@ export const seasonOf = (iso) => {
 
 export const seasonsIn = (fines) => [...new Set(fines.map((f) => seasonOf(f.date)))].sort().reverse()
 
-// Slovenian plural: 1 multa, 2 multi, 3–4 multe, 5+ mult (also 101, 102, …).
-export const multeWord = (n) => {
-  const m = n % 100
-  return m === 1 ? 'multa' : m === 2 ? 'multi' : m === 3 || m === 4 ? 'multe' : 'mult'
-}
+// Team usage: 1 multa (plačana), any other number multe (plačane). Same for kasa/kase.
+export const plural = (n, one, many) => (n === 1 ? one : many)
+export const multeWord = (n) => plural(n, 'multa', 'multe')
 export const multeN = (n) => `${n} ${multeWord(n)}`
 
 export const donationKasa = (donations) => donations.reduce((n, d) => n + (d.quantity ?? 1), 0)
@@ -68,4 +66,4 @@ export const donorName = (d, players) =>
   d.player_id != null ? fullName(players.find((p) => p.id === d.player_id)) : d.donor_name || 'Anonimno'
 
 // Team usage: 1 kasa, more kase.
-export const kaseWord = (n) => (n === 1 ? 'kasa' : 'kase')
+export const kaseWord = (n) => plural(n, 'kasa', 'kase')

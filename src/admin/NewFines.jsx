@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, multeN, priceLabel, todayISO } from '../lib/stats'
+import { formatDate, fullName, initials, multeN, plural, priceLabel, todayISO } from '../lib/stats'
 
 // Add one fine type to one or more players in one go.
 export default function NewFines({ data, run }) {
@@ -35,7 +35,7 @@ export default function NewFines({ data, run }) {
     setBusy(true)
     const rows = [...picked].map((player_id) => ({ player_id, fine_type_id: type.id, date, note: note.trim() || null }))
     const n = rows.length
-    const ok = await run(() => api.addFines(rows), `Dodano: ${multeN(n)} ✓`)
+    const ok = await run(() => api.addFines(rows), `${multeN(n)} ${plural(n, 'dodana', 'dodane')} ✓`)
     setBusy(false)
     if (ok) {
       setPicked(new Set())

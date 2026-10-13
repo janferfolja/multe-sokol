@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
-  PODIUM_TITLES, daysSince, multeN, multeWord, formatDate, formatEuro, fullName, initials,
+  PODIUM_TITLES, daysSince, multeN, multeWord, plural, formatDate, formatEuro, fullName, initials,
   donationKasa, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
 
@@ -43,7 +43,7 @@ export default function Home({ data, onPlayer }) {
             <Pill label="Euro" value={formatEuro(totals.euro)} gold />
             <Pill label="Kase" value={totals.kasa + charity} sub={charity > 0 ? `🍻 dobrodelne: ${charity}` : null} />
             <Pill label="Merenda" value={totals.merenda} />
-            <Pill label="Neplačano" value={totals.pending} warn />
+            <Pill label="Neplačane" value={totals.pending} warn />
           </div>
         </div>
         {totals.sponsor && (
@@ -58,7 +58,7 @@ export default function Home({ data, onPlayer }) {
       <section className="section">
         <h2 className="section-title"><span className="section-icon">🏆</span>Lestvica</h2>
         {totals.count === 0 ? (
-          <p className="empty">V tej sezoni še ni mult. Zaenkrat.</p>
+          <p className="empty">V tej sezoni še ni nobene multe. Zaenkrat.</p>
         ) : (
           <>
             <Podium stats={stats.slice(0, 3)} onPlayer={onPlayer} />
@@ -144,7 +144,7 @@ function Podium({ stats, onPlayer }) {
               <div className="podium-stats">
                 <span>{multeN(s.count)}</span><span className="podium-stats-sep">·</span><span>{formatEuro(s.euro)}</span>
               </div>
-              {s.pending > 0 && <div className="podium-pending">⚠ Neplačano: {s.pending}</div>}
+              {s.pending > 0 && <div className="podium-pending">⚠ {s.pending} {plural(s.pending, 'neplačana', 'neplačane')}</div>}
             </div>
             <div className="podium-pedestal"><span className="podium-rank">{i + 1}</span></div>
           </button>
@@ -178,7 +178,7 @@ function PlayerCard({ s, max, onPlayer }) {
         {s.merenda > 0 && <Row label="Merenda" value={s.merenda} />}
       </div>
       <div className="player-card-bar"><div className="player-card-bar-fill" style={{ width: `${ratio * 100}%` }} /></div>
-      {s.pending > 0 && <div className="player-card-pending">⚠ Neplačano: {s.pending}</div>}
+      {s.pending > 0 && <div className="player-card-pending">⚠ {s.pending} {plural(s.pending, 'neplačana', 'neplačane')}</div>}
     </button>
   )
 }
@@ -196,7 +196,7 @@ function Legend({ fineTypes }) {
   ]
   return (
     <section className="section">
-      <h2 className="section-title"><span className="section-icon">📋</span>Legenda mult</h2>
+      <h2 className="section-title"><span className="section-icon">📋</span>Legenda multe</h2>
       <div className="legend-groups">
         {groups.map(([kind, title]) => (
           <div key={kind} className="legend-group">

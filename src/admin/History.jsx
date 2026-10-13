@@ -11,7 +11,7 @@ export default function History({ data, run }) {
   const actions = (f) => (
     <div className="row-actions">
       <button className="btn btn-sm btn-ghost" title={f.paid ? 'Označi kot neplačano' : 'Označi kot plačano'}
-        onClick={() => run(() => api.setPaid([f.id], !f.paid), f.paid ? 'Označeno kot neplačano' : 'Označeno kot plačano ✓')}>
+        onClick={() => run(() => api.setPaid([f.id], !f.paid), f.paid ? 'Multa neplačana' : 'Multa plačana ✓')}>
         {f.paid ? '↩︎' : '✓'}
       </button>
       <button className="btn btn-sm btn-ghost" title="Uredi" onClick={() => setEditing(f)}>✎</button>
@@ -77,7 +77,7 @@ function EditFine({ data, fine, run, onClose }) {
           )}
         </div>
         <label>Opomba<input type="text" value={form.note} onChange={set('note')} /></label>
-        <label className="check"><input type="checkbox" checked={form.paid} onChange={set('paid')} /> Plačano</label>
+        <label className="check"><input type="checkbox" checked={form.paid} onChange={set('paid')} /> Plačana</label>
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Prekliči</button>
           <button className="btn btn-primary">Shrani</button>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
-import { fullName, kaseWord, todayISO } from '../lib/stats'
+import { fullName, kaseWord, plural, todayISO } from '../lib/stats'
 import { DonationList } from '../public/Donations'
 
 const OTHER = 'other'
@@ -30,7 +30,7 @@ export default function Charity({ data, run }) {
       note: note.trim() || null,
     }
     const q = Number(quantity)
-    const ok = await run(() => api.addDonation(row), `Dodano: ${q} ${kaseWord(q)} 🍻`)
+    const ok = await run(() => api.addDonation(row), `${q} ${kaseWord(q)} ${plural(q, 'dodana', 'dodane')} 🍻`)
     setBusy(false)
     if (ok) {
       setDonor('')
