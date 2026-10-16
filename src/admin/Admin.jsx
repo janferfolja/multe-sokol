@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api, isDemo } from '../lib/api'
 import { authLinkType, go } from '../lib/router'
 import NewFines from './NewFines'
@@ -25,6 +25,26 @@ export default function Admin({ data, reload }) {
   const [admin, setAdmin] = useState(false)
   const [tab, setTab] = useState('new')
   const [toast, setToast] = useState(null)
+  const tabsRef = useRef(null)
+  const tabsAnchor = useRef(null) // marks where the tab bar sits when not pinned
+
+  // Expose the tab bar's height so other sticky bars (Plačila) can sit right under it.
+  useEffect(() => {
+    const bar = tabsRef.current
+    if (!bar) return
+    const ro = new ResizeObserver(() => document.documentElement.style.setProperty('--admin-tabs-h', `${bar.offsetHeight}px`))
+    ro.observe(bar)
+    return () => { ro.disconnect(); document.documentElement.style.removeProperty('--admin-tabs-h') }
+  })
+
+  // Switch tab; if the sticky tab bar is pinned (page scrolled down), jump to the top of the new tab.
+  const openTab = (id) => {
+    setTab(id)
+    const anchor = tabsAnchor.current
+    if (anchor && anchor.getBoundingClientRect().top < 0) {
+      requestAnimationFrame(() => window.scrollTo({ top: anchor.getBoundingClientRect().top + window.scrollY }))
+    }
+  }
 
   useEffect(() => {
     let alive = true
@@ -82,13 +102,18 @@ export default function Admin({ data, reload }) {
         </div>
       </div>
       <PenaltyAlert {...props} />
-      <div className="tabs" role="tablist">
-        {TABS.map(([id, label]) => (
-          <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>
-            {label}
-          </button>
-        ))}
-      </div>
+      <div ref={tabsAnchor} aria-hidden />
+      <nav className="admin-tabs" role="tablist" ref={tabsRef}>
+        {TABS.map(([id, label]) => {
+          const [icon, ...words] = label.split(' ')
+          return (
+            <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'active' : ''} onClick={() => openTab(id)}>
+              <span className="admin-tab-icon" aria-hidden>{icon}</span>
+              <span className="admin-tab-label">{words.join(' ')}</span>
+            </button>
+          )
+        })}
+      </nav>
       {tab === 'new' && <NewFines {...props} />}
       {tab === 'bonus' && <Bonuses {...props} />}
       {tab === 'charity' && <Charity {...props} />}
