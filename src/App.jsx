@@ -7,9 +7,11 @@ import PlayerModal from './public/PlayerModal'
 import Admin from './admin/Admin'
 import Install from './public/Install'
 import { isStandalone } from './lib/install'
+import { useSwipeNav } from './lib/swipe'
 
 export default function App() {
   const route = useRoute()
+  const swipeDir = useSwipeNav(route)
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [openPlayer, setOpenPlayer] = useState(null)
@@ -48,13 +50,15 @@ export default function App() {
         </div>
       )}
 
-      {error && <div className="error-box">Napaka pri nalaganju: {error} <button className="btn btn-sm" onClick={reload}>Poskusi znova</button></div>}
-      {!data && !error && route !== 'app' && <div className="loading">Nalagam podatke…</div>}
+      <main key={route} className={swipeDir ? `slide-in-${swipeDir}` : undefined}>
+        {error && <div className="error-box">Napaka pri nalaganju: {error} <button className="btn btn-sm" onClick={reload}>Poskusi znova</button></div>}
+        {!data && !error && route !== 'app' && <div className="loading">Nalagam podatke…</div>}
 
-      {data && route === 'home' && <Home data={data} onPlayer={setOpenPlayer} />}
-      {data && route === 'multe' && <AllFines data={data} onPlayer={setOpenPlayer} />}
-      {data && route === 'admin' && <Admin data={data} reload={reload} />}
-      {route === 'app' && <Install />}
+        {data && route === 'home' && <Home data={data} onPlayer={setOpenPlayer} />}
+        {data && route === 'multe' && <AllFines data={data} onPlayer={setOpenPlayer} />}
+        {data && route === 'admin' && <Admin data={data} reload={reload} />}
+        {route === 'app' && <Install />}
+      </main>
 
       {data && openPlayer != null && (
         <PlayerModal data={data} playerId={openPlayer} onClose={() => setOpenPlayer(null)} />
