@@ -39,7 +39,7 @@ For local development against the real database, copy `.env.example` to `.env.lo
 
 - **Admin → Nove multe:** pick a date and a fine type, tap every player who earned it, then press *Dodaj*. *Zadnje dodane* lets you undo mistakes.
 - **Admin → Plačila:** *Vse plačano* settles a player in one go, or tick individual fines and mark them paid.
-- **Admin → Uredi multe:** edit, un-pay or delete any fine.
+- **Admin → Arhiv:** edit, un-pay or delete any fine.
 - **Admin → Igralci / Vrste mult:** add players or fine types and change prices. A price change only affects new fines; each fine keeps the amount it was given with.
 
 Adding another admin later: create their user in **Authentication → Users** (Auto Confirm) and run the `insert into public.admins …` line. Each admin can change their password from the admin panel (*Spremeni geslo*). A forgotten password can be reset by another admin from the same Users page.
