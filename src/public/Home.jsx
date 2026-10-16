@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   PODIUM_TITLES, daysSince, multeN, multeWord, plural, formatDate, formatEuro, fullName, initials,
-  donationKasa, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
+  donationCount, jokersFor, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
 
 export default function Home({ data, onPlayer }) {
@@ -21,7 +21,8 @@ export default function Home({ data, onPlayer }) {
   )
   const stats = useMemo(() => playerStats(seasonData), [seasonData])
   const totals = teamTotals(stats)
-  const charity = donationKasa(seasonData.donations)
+  const charityKasa = donationCount(seasonData.donations, 'kasa')
+  const charityMerenda = donationCount(seasonData.donations, 'merenda')
 
   return (
     <>
@@ -41,8 +42,8 @@ export default function Home({ data, onPlayer }) {
           <div className="stats-total-numbers">
             <Pill label="Multe" value={totals.count} />
             <Pill label="Euro" value={formatEuro(totals.euro)} gold />
-            <Pill label="Kase" value={totals.kasa + charity} sub={charity > 0 ? `🍻 dobrodelne: ${charity}` : null} />
-            <Pill label="Merenda" value={totals.merenda} />
+            <Pill label="Kase" value={totals.kasa + charityKasa} sub={charityKasa > 0 ? `🍻 dobrodelne: ${charityKasa}` : null} />
+            <Pill label="Merende" value={totals.merenda + charityMerenda} sub={charityMerenda > 0 ? `🍕 dobrodelne: ${charityMerenda}` : null} />
             <Pill label="Neplačane" value={totals.pending} warn />
           </div>
         </div>
@@ -61,10 +62,10 @@ export default function Home({ data, onPlayer }) {
           <p className="empty">V tej sezoni še ni nobene multe. Z zdej.</p>
         ) : (
           <>
-            <Podium stats={stats.slice(0, 3)} onPlayer={onPlayer} />
+            <Podium stats={stats.slice(0, 3)} bonuses={data.bonuses ?? []} onPlayer={onPlayer} />
             <div className="stats-grid">
               {stats.slice(3).map((s) => (
-                <PlayerCard key={s.player.id} s={s} max={stats[0].count} onPlayer={onPlayer} />
+                <PlayerCard key={s.player.id} s={s} max={stats[0].count} bonuses={data.bonuses ?? []} onPlayer={onPlayer} />
               ))}
             </div>
           </>
@@ -90,7 +91,7 @@ function Overdue({ data, onPlayer }) {
   const [expanded, setExpanded] = useState(false)
   const players = new Map(data.players.map((p) => [p.id, p]))
   const types = new Map(data.fineTypes.map((t) => [t.id, t]))
-  const unpaid = data.fines.filter((f) => !f.paid).sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
+  const unpaid = data.fines.filter((f) => !f.paid && !f.waived).sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
   if (unpaid.length === 0) return null
   const shown = expanded ? unpaid : unpaid.slice(0, 5)
 
@@ -126,7 +127,7 @@ function Overdue({ data, onPlayer }) {
   )
 }
 
-function Podium({ stats, onPlayer }) {
+function Podium({ stats, bonuses, onPlayer }) {
   const order = [1, 0, 2] // silver, gold, bronze
   const medals = ['🥇', '🥈', '🥉']
   return (
@@ -144,6 +145,7 @@ function Podium({ stats, onPlayer }) {
               <div className="podium-stats">
                 <span>{multeN(s.count)}</span><span className="podium-stats-sep">·</span><span>{formatEuro(s.euro)}</span>
               </div>
+              <BonusBadges bonuses={bonuses} playerId={s.player.id} />
               {s.pending > 0 && <div className="podium-pending">⚠ {s.pending} {plural(s.pending, 'neplačana', 'neplačane')}</div>}
             </div>
             <div className="podium-pedestal"><span className="podium-rank">{i + 1}</span></div>
@@ -154,7 +156,7 @@ function Podium({ stats, onPlayer }) {
   )
 }
 
-function PlayerCard({ s, max, onPlayer }) {
+function PlayerCard({ s, max, bonuses, onPlayer }) {
   const ratio = max ? s.count / max : 0
   const severity = ratio >= 0.66 ? 'high' : ratio >= 0.33 ? 'mid' : 'low'
   return (
@@ -175,11 +177,24 @@ function PlayerCard({ s, max, onPlayer }) {
       <div className="player-card-stats">
         <Row label="Euro" value={formatEuro(s.euro)} />
         {s.kasa > 0 && <Row label={s.kasa === 1 ? 'Kasa' : 'Kase'} value={s.kasa} />}
-        {s.merenda > 0 && <Row label="Merenda" value={s.merenda} />}
+        {s.merenda > 0 && <Row label={s.merenda === 1 ? 'Merenda' : 'Merende'} value={s.merenda} />}
       </div>
       <div className="player-card-bar"><div className="player-card-bar-fill" style={{ width: `${ratio * 100}%` }} /></div>
+      <BonusBadges bonuses={bonuses} playerId={s.player.id} />
       {s.pending > 0 && <div className="player-card-pending">⚠ {s.pending} {plural(s.pending, 'neplačana', 'neplačane')}</div>}
     </button>
+  )
+}
+
+function BonusBadges({ bonuses, playerId }) {
+  const own = bonuses.filter((b) => b.player_id === playerId)
+  if (own.length === 0) return null
+  const jokers = jokersFor(bonuses, playerId).length
+  return (
+    <div className="bonus-badges">
+      <span className="bonus-badge">🏅 {own.length}</span>
+      {jokers > 0 && <span className="bonus-badge joker">🃏 jolly{jokers > 1 ? ` ×${jokers}` : ''}</span>}
+    </div>
   )
 }
 

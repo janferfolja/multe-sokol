@@ -1,8 +1,8 @@
-import { donationKasa, donorName, formatDate, kaseWord } from '../lib/stats'
+import { donationKasa, donationKind, donationLabel, donorName, formatDate } from '../lib/stats'
 
 // "Dobrodelni nameni": kase brought voluntarily. Used on the Multe page and in admin (with renderActions).
 export function DonationList({ data, donations, onPlayer, renderActions }) {
-  if (donations.length === 0) return <p className="empty">Še ni nobene dobrodelne kase.</p>
+  if (donations.length === 0) return <p className="empty">Še ni nobene dobrodelne kase ali merende.</p>
   return (
     <div className="fine-list">
       {donations.map((d) => (
@@ -16,7 +16,7 @@ export function DonationList({ data, donations, onPlayer, renderActions }) {
             )}
             <div className="fine-type">Dobrodelni nameni{d.note ? <span className="fine-note"> · {d.note}</span> : null}</div>
           </div>
-          <div className="price-badge price-kasa">{`${d.quantity} ${kaseWord(d.quantity).toUpperCase()}`}</div>
+          <div className={`price-badge price-${donationKind(d)}`}>{donationLabel(d)}</div>
           {renderActions?.(d)}
         </div>
       ))}
@@ -32,7 +32,7 @@ export default function Donations({ data, onPlayer }) {
         <span className="section-icon">🍻</span>Dobrodelni nameni
         {donations.length > 0 && <span className="count-chip">{donationKasa(donations)}</span>}
       </h2>
-      <p className="hint">Kase, prinesene prostovoljno, brez multe. Štejejo med skupne kase sezone.</p>
+      <p className="hint">Kase in merende, prinesene prostovoljno, brez multe. Štejejo v skupne kase in merende sezone.</p>
       <DonationList data={data} donations={donations} onPlayer={onPlayer} />
     </section>
   )

@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
-import { fullName, kaseWord, plural, todayISO } from '../lib/stats'
+import { fullName, kaseWord, merendaWord, plural, todayISO } from '../lib/stats'
 import { DonationList } from '../public/Donations'
 
 const OTHER = 'other'
 const ANON = 'anon'
 
-// Add a kasa brought for "dobrodelni nameni": no fine, but it counts in the season's kase.
+// Add a kasa or merenda brought for "dobrodelni nameni": no fine, but it counts in the season's totals.
 export default function Charity({ data, run }) {
   const [date, setDate] = useState(todayISO)
+  const [kind, setKind] = useState('kasa')
   const [donor, setDonor] = useState('')
   const [donorName, setDonorName] = useState('')
   const [quantity, setQuantity] = useState(1)
@@ -16,6 +17,7 @@ export default function Charity({ data, run }) {
   const [busy, setBusy] = useState(false)
 
   const players = data.players.filter((p) => p.active).sort((a, b) => fullName(a).localeCompare(fullName(b)))
+  const word = kind === 'kasa' ? kaseWord : merendaWord
   const valid = donor !== '' && (donor !== OTHER || donorName.trim() !== '') && quantity >= 1
 
   const submit = async (e) => {
@@ -24,13 +26,14 @@ export default function Charity({ data, run }) {
     setBusy(true)
     const row = {
       date,
+      kind,
       player_id: donor === OTHER || donor === ANON ? null : Number(donor),
       donor_name: donor === OTHER ? donorName.trim() : null,
       quantity: Number(quantity),
       note: note.trim() || null,
     }
     const q = Number(quantity)
-    const ok = await run(() => api.addDonation(row), `${q} ${kaseWord(q)} ${plural(q, 'dodana', 'dodane')} 🍻`)
+    const ok = await run(() => api.addDonation(row), `${q} ${word(q)} ${plural(q, 'dodana', 'dodane')} ${kind === 'kasa' ? '🍻' : '🍕'}`)
     setBusy(false)
     if (ok) {
       setDonor('')
@@ -42,7 +45,7 @@ export default function Charity({ data, run }) {
 
   const actions = (d) => (
     <button className="btn btn-sm btn-ghost btn-danger" title="Izbriši"
-      onClick={() => confirm('Izbrišem to dobrodelno kaso?') && run(() => api.deleteDonation(d.id), 'Izbrisano')}>
+      onClick={() => confirm('Izbrišem ta vnos?') && run(() => api.deleteDonation(d.id), 'Izbrisano')}>
       🗑
     </button>
   )
@@ -51,7 +54,11 @@ export default function Charity({ data, run }) {
     <>
       <form className="section form" onSubmit={submit}>
         <h2 className="section-title"><span className="section-icon">🍻</span>Dobrodelni nameni</h2>
-        <p className="hint">Kasa brez multe: ne šteje kot multa, šteje pa med kase sezone.</p>
+        <p className="hint">Kasa ali merenda brez multe: ne šteje kot multa, šteje pa v skupne kase in merende sezone.</p>
+        <div className="seg" role="radiogroup" aria-label="Vrsta">
+          <button type="button" role="radio" aria-checked={kind === 'kasa'} className={kind === 'kasa' ? 'on' : ''} onClick={() => setKind('kasa')}>🍻 Kasa</button>
+          <button type="button" role="radio" aria-checked={kind === 'merenda'} className={kind === 'merenda' ? 'on' : ''} onClick={() => setKind('merenda')}>🍕 Merenda</button>
+        </div>
         <div className="form-row">
           <label>
             Datum
@@ -63,7 +70,7 @@ export default function Charity({ data, run }) {
           </label>
         </div>
         <label>
-          Kdo jo je prinesel
+          {kind === 'kasa' ? 'Kdo jo je prinesel' : 'Kdo jo je pripravil'}
           <select value={donor} onChange={(e) => setDonor(e.target.value)} required>
             <option value="">— izberi —</option>
             {players.map((p) => <option key={p.id} value={p.id}>{fullName(p)}</option>)}
@@ -82,12 +89,12 @@ export default function Charity({ data, run }) {
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="npr. po zmagi v derbiju" />
         </label>
         <button className="btn btn-primary btn-lg" disabled={busy || !valid}>
-          {valid ? `Dodaj ${Number(quantity)} ${kaseWord(Number(quantity))}` : 'Izberi, kdo jo je prinesel'}
+          {valid ? `Dodaj ${Number(quantity)} ${word(Number(quantity))}` : 'Izberi, kdo jo je prinesel'}
         </button>
       </form>
 
       <section className="section">
-        <h2 className="section-title"><span className="section-icon">📜</span>Vse dobrodelne kase</h2>
+        <h2 className="section-title"><span className="section-icon">📜</span>Vse dobrodelne kase in merende</h2>
         <DonationList data={data} donations={data.donations ?? []} renderActions={actions} />
       </section>
     </>

@@ -446,3 +446,21 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 }
 
 .stat-pill-sub { font-size: 0.66em; opacity: 0.75; font-weight: 700; margin-top: 1px; }
+
+/* ── Bonusi & oproščene multe ─────────────────────────────────── */
+.status-badge.waived { background: var(--violet-soft); color: var(--violet); }
+.status-badge.bonus-open { background: var(--yellow-soft); color: #8a6400; }
+@media (prefers-color-scheme: dark) { .status-badge.bonus-open { color: var(--yellow); } }
+.fine-row.waived .fine-main { opacity: 0.6; text-decoration: line-through; text-decoration-thickness: 1px; }
+.bonus-reward { font-size: 0.85em; font-weight: 700; margin-top: 2px; }
+.bonus-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.player-card .bonus-badges { justify-content: flex-start; }
+.bonus-badge { font-size: 0.72em; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: var(--yellow-soft); color: #8a6400; border: 1.5px solid currentColor; }
+.bonus-badge.joker { background: var(--violet-soft); color: var(--violet); }
+@media (prefers-color-scheme: dark) { .bonus-badge { color: var(--yellow); } .bonus-badge.joker { color: var(--violet); } }
+.modal-subtitle { margin: 18px 0 4px; font-weight: 900; font-stretch: 70%; font-size: 1.2em; text-transform: uppercase; }
+.seg { display: flex; border: 2px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.seg button { flex: 1; background: var(--card); border: 0; padding: 10px; font-weight: 800; }
+.seg button + button { border-left: 2px solid var(--line); }
+.seg button.on { background: var(--ink); color: var(--paper); }
+.jolly-note { margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--violet-soft); color: var(--violet); font-weight: 700; font-size: 0.9em; }

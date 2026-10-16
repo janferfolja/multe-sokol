@@ -17,15 +17,16 @@ function supabaseApi() {
 
   return {
     async load() {
-      const [players, fineTypes, fines, donations] = await Promise.all([
+      const optional = (query) => query.then(({ data, error }) => (error ? [] : data))
+      const [players, fineTypes, fines, donations, bonuses] = await Promise.all([
         sb.from('players').select('*').order('surname').then(check),
         sb.from('fine_types').select('*').order('id').then(check),
         sb.from('fines').select('*').order('date', { ascending: false }).order('id', { ascending: false }).then(check),
-        // Tolerate the donations table not existing yet (migration not run): show none.
-        sb.from('donations').select('*').order('date', { ascending: false }).order('id', { ascending: false })
-          .then(({ data, error }) => (error ? [] : data)),
+        // Tables added by later migrations: show none until the migration has been run.
+        optional(sb.from('donations').select('*').order('date', { ascending: false }).order('id', { ascending: false })),
+        optional(sb.from('bonuses').select('*').order('date', { ascending: false }).order('id', { ascending: false })),
       ])
-      return { players, fineTypes, fines, donations }
+      return { players, fineTypes, fines, donations, bonuses }
     },
 
     async getUser() {
@@ -58,6 +59,9 @@ function supabaseApi() {
     deleteFines: async (ids) => check(await sb.from('fines').delete().in('id', ids)),
     addDonation: async (row) => check(await sb.from('donations').insert(row)),
     deleteDonation: async (id) => check(await sb.from('donations').delete().eq('id', id)),
+    saveBonus: async ({ id, ...b }) =>
+      check(id ? await sb.from('bonuses').update(b).eq('id', id) : await sb.from('bonuses').insert(b)),
+    deleteBonus: async (id) => check(await sb.from('bonuses').delete().eq('id', id)),
     setPaid: async (ids, paid) => check(await sb.from('fines').update({ paid }).in('id', ids)),
     savePlayer: async ({ id, ...p }) =>
       check(id ? await sb.from('players').update(p).eq('id', id) : await sb.from('players').insert(p)),
@@ -72,6 +76,7 @@ function demoApi() {
   try { db = JSON.parse(localStorage.getItem(STORE)) } catch { /* ignore */ }
   db ||= structuredClone(demoSeed)
   db.donations ||= []
+  db.bonuses ||= []
   let user = null
   try { user = JSON.parse(sessionStorage.getItem(STORE + '-user')) } catch { /* ignore */ }
   const listeners = new Set()
@@ -89,7 +94,8 @@ function demoApi() {
     async load() {
       const fines = [...db.fines].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
       const donations = [...db.donations].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
-      return structuredClone({ players: db.players, fineTypes: db.fineTypes, fines, donations })
+      const bonuses = [...db.bonuses].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
+      return structuredClone({ players: db.players, fineTypes: db.fineTypes, fines, donations, bonuses })
     },
     getUser: async () => user,
     onAuthChange(cb) { listeners.add(cb); return () => listeners.delete(cb) },
@@ -100,13 +106,16 @@ function demoApi() {
 
     async addFines(rows) {
       const now = new Date().toISOString()
-      for (const r of rows) {
-        db.fines.push({
-          id: nextId(db.fines), amount: priceOf(r.fine_type_id), note: null, paid: false, paid_at: null,
+      const added = rows.map((r) => {
+        const f = {
+          id: nextId(db.fines), amount: priceOf(r.fine_type_id), note: null, paid: false, paid_at: null, waived: false,
           created_at: now, created_by: user?.email, ...r,
-        })
-      }
+        }
+        db.fines.push(f)
+        return f
+      })
       save()
+      return structuredClone(added)
     },
     async updateFine(id, patch) {
       const f = db.fines.find((x) => x.id === id)
@@ -120,12 +129,23 @@ function demoApi() {
       db.donations.push({ id: nextId(db.donations), quantity: 1, created_at: new Date().toISOString(), created_by: user?.email, ...row })
       save()
     },
+    async saveBonus(b) {
+      if (b.id) Object.assign(db.bonuses.find((x) => x.id === b.id), b)
+      else db.bonuses.push({ used_at: null, used_fine_id: null, created_at: new Date().toISOString(), created_by: user?.email, ...b, id: nextId(db.bonuses) })
+      save()
+    },
+    async deleteBonus(id) {
+      db.bonuses = db.bonuses.filter((b) => b.id !== id)
+      save()
+    },
     async deleteDonation(id) {
       db.donations = db.donations.filter((d) => d.id !== id)
       save()
     },
     async deleteFines(ids) {
       db.fines = db.fines.filter((f) => !ids.includes(f.id))
+      // Same as the database: deleting the fine a joker was used on gives the joker back.
+      for (const b of db.bonuses) if (ids.includes(b.used_fine_id)) Object.assign(b, { used_fine_id: null, used_at: null })
       save()
     },
     async setPaid(ids, paid) {
@@ -145,7 +165,7 @@ function demoApi() {
     },
     resetDemo() {
       try { localStorage.removeItem(STORE) } catch { /* ignore */ }
-      db = { ...structuredClone(demoSeed), donations: [] }
+      db = { ...structuredClone(demoSeed), donations: [], bonuses: [] }
     },
   }
 }

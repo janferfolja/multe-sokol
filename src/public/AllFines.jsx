@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { formatDate, fullName, priceLabel, seasonOf, seasonsIn } from '../lib/stats'
 import Donations from './Donations'
+import Bonuses from './Bonuses'
 
 // Filterable list of fines. Used publicly and, with `renderActions`/`selectable`, in admin.
 export function FineList({ data, fines, onPlayer, selectable, selected, onToggle, renderActions }) {
@@ -13,7 +14,7 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
         const p = players.get(f.player_id)
         const t = types.get(f.fine_type_id)
         return (
-          <div key={f.id} className={`fine-row ${selected?.has(f.id) ? 'selected' : ''}`}>
+          <div key={f.id} className={`fine-row ${selected?.has(f.id) ? 'selected' : ''} ${f.waived ? 'waived' : ''}`}>
             {selectable && (
               <input type="checkbox" checked={selected.has(f.id)} onChange={() => onToggle(f.id)} aria-label="Izberi" />
             )}
@@ -23,7 +24,11 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
               <div className="fine-type">{t?.name}{f.note ? <span className="fine-note"> · {f.note}</span> : null}</div>
             </div>
             <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
-            <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Plačana' : 'Neplačana'}</div>
+            {f.waived ? (
+              <div className="status-badge waived">🃏 Oproščena</div>
+            ) : (
+              <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Plačana' : 'Neplačana'}</div>
+            )}
             {renderActions?.(f)}
           </div>
         )
@@ -47,8 +52,9 @@ export function useFineFilters(data, { defaultStatus = 'all' } = {}) {
     return data.fines.filter((f) => {
       if (player && f.player_id !== Number(player)) return false
       if (type && f.fine_type_id !== Number(type)) return false
-      if (status === 'paid' && !f.paid) return false
-      if (status === 'unpaid' && f.paid) return false
+      if (status === 'paid' && (!f.paid || f.waived)) return false
+      if (status === 'unpaid' && (f.paid || f.waived)) return false
+      if (status === 'waived' && !f.waived) return false
       if (season && seasonOf(f.date) !== season) return false
       if (needle) {
         const p = players.get(f.player_id)
@@ -75,6 +81,7 @@ export function useFineFilters(data, { defaultStatus = 'all' } = {}) {
         <option value="all">Vsa stanja</option>
         <option value="unpaid">Neplačane</option>
         <option value="paid">Plačane</option>
+        <option value="waived">Oproščene</option>
       </select>
       <select value={season} onChange={(e) => setSeason(e.target.value)}>
         <option value="">Vse sezone</option>
@@ -98,6 +105,7 @@ export default function AllFines({ data, onPlayer }) {
           <button className="btn btn-ghost btn-block" onClick={() => setLimit(limit + 100)}>Pokaži več</button>
         )}
       </section>
+      <Bonuses data={data} onPlayer={onPlayer} />
       <Donations data={data} onPlayer={onPlayer} />
     </>
   )

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, multeN, plural, priceLabel, todayISO } from '../lib/stats'
+import { formatDate, fullName, initials, jokersFor, multeN, plural, priceLabel, todayISO } from '../lib/stats'
 
 // Add one fine type to one or more players in one go.
 export default function NewFines({ data, run }) {
@@ -16,26 +16,42 @@ export default function NewFines({ data, run }) {
     [data.players],
   )
   const types = data.fineTypes.filter((t) => t.active)
+  const bonuses = data.bonuses ?? []
+  const hasJolly = (pid) => jokersFor(bonuses, pid).length > 0
+  const jollyPicked = [...picked].filter(hasJolly)
   const type = data.fineTypes.find((t) => t.id === Number(typeId))
   const needle = search.trim().toLowerCase()
   const visible = needle
     ? players.filter((p) => `${fullName(p)} ${p.alias ?? ''}`.toLowerCase().includes(needle))
     : players
 
-  const toggle = (id) => {
-    const next = new Set(picked)
+  // Functional update: quick successive taps must each see the latest selection.
+  const toggle = (id) => setPicked((prev) => {
+    const next = new Set(prev)
     if (next.has(id)) next.delete(id)
     else next.add(id)
-    setPicked(next)
-  }
+    return next
+  })
 
   const submit = async (e) => {
     e.preventDefault()
     if (!type || picked.size === 0) return
     setBusy(true)
-    const rows = [...picked].map((player_id) => ({ player_id, fine_type_id: type.id, date, note: note.trim() || null }))
+    // A player with a jolly gets this multa cancelled (oproščena), and the jolly is used up.
+    const jolly = new Map([...picked].map((pid) => [pid, jokersFor(bonuses, pid)[0]]).filter(([, b]) => b))
+    const rows = [...picked].map((player_id) => ({
+      player_id, fine_type_id: type.id, date, note: note.trim() || null,
+      ...(jolly.has(player_id) ? { waived: true } : {}),
+    }))
     const n = rows.length
-    const ok = await run(() => api.addFines(rows), `${multeN(n)} ${plural(n, 'dodana', 'dodane')} ✓`)
+    const msg = `${multeN(n)} ${plural(n, 'dodana', 'dodane')} ✓` + (jolly.size ? ` · 🃏 ${jolly.size} ${plural(jolly.size, 'oproščena', 'oproščene')} z jollyjem` : '')
+    const ok = await run(async () => {
+      const added = await api.addFines(rows)
+      for (const f of added ?? []) {
+        const b = jolly.get(f.player_id)
+        if (b) await api.saveBonus({ id: b.id, used_fine_id: f.id, used_at: new Date().toISOString() })
+      }
+    }, msg)
     setBusy(false)
     if (ok) {
       setPicked(new Set())
@@ -87,6 +103,7 @@ export default function NewFines({ data, run }) {
                 <span className="chip-avatar">{initials(p)}</span>
                 {p.name} {p.surname}
                 {p.alias && <span className="chip-alias">{p.alias}</span>}
+                {hasJolly(p.id) && <span title="Ima jolly">🃏</span>}
               </button>
             ))}
           </div>
@@ -97,6 +114,12 @@ export default function NewFines({ data, run }) {
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="npr. trening v torek, slika v skupini…" />
         </label>
 
+        {jollyPicked.length > 0 && (
+          <p className="jolly-note">
+            🃏 {jollyPicked.map((pid) => fullName(players.find((p) => p.id === pid))).join(', ')}:{' '}
+            {plural(jollyPicked.length, 'ima jolly, zato bo ta multa oproščena', 'imajo jolly, zato bodo te multe oproščene')}.
+          </p>
+        )}
         <button className="btn btn-primary btn-lg" disabled={busy || !type || picked.size === 0}>
           {picked.size === 0 || !type
             ? 'Izberi multo in igralce'

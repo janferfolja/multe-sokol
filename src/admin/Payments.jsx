@@ -5,16 +5,17 @@ import { FineList, useFineFilters } from '../public/AllFines'
 
 export default function Payments({ data, run }) {
   const debtors = useMemo(() => playerStats(data).filter((s) => s.pending > 0).sort((a, b) => b.pending - a.pending), [data])
-  const unpaidData = useMemo(() => ({ ...data, fines: data.fines.filter((f) => !f.paid) }), [data])
+  const unpaidData = useMemo(() => ({ ...data, fines: data.fines.filter((f) => !f.paid && !f.waived) }), [data])
   const { filtered, controls } = useFineFilters(unpaidData, { defaultStatus: 'unpaid' })
   const [selected, setSelected] = useState(() => new Set())
 
-  const toggle = (id) => {
-    const next = new Set(selected)
+  // Functional update: quick successive taps must each see the latest selection.
+  const toggle = (id) => setSelected((prev) => {
+    const next = new Set(prev)
     if (next.has(id)) next.delete(id)
     else next.add(id)
-    setSelected(next)
-  }
+    return next
+  })
   const allSelected = filtered.length > 0 && filtered.every((f) => selected.has(f.id))
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(filtered.map((f) => f.id)))
 
@@ -22,7 +23,7 @@ export default function Payments({ data, run }) {
     if (await run(() => api.setPaid(ids, true), label)) setSelected(new Set())
   }
 
-  const playerUnpaidIds = (pid) => data.fines.filter((f) => !f.paid && f.player_id === pid).map((f) => f.id)
+  const playerUnpaidIds = (pid) => data.fines.filter((f) => !f.paid && !f.waived && f.player_id === pid).map((f) => f.id)
 
   return (
     <>

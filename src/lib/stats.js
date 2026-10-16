@@ -23,6 +23,7 @@ export function playerStats({ players, fineTypes, fines }) {
   const typeById = new Map(fineTypes.map((t) => [t.id, t]))
   const byPlayer = new Map(players.map((p) => [p.id, { player: p, count: 0, euro: 0, kasa: 0, merenda: 0, pending: 0, pendingEuro: 0 }]))
   for (const f of fines) {
+    if (f.waived) continue // cancelled by a joker: stays in history, counts nowhere
     const s = byPlayer.get(f.player_id)
     const t = typeById.get(f.fine_type_id)
     if (!s || !t) continue
@@ -67,3 +68,21 @@ export const donorName = (d, players) =>
 
 // Team usage: 1 kasa, more kase.
 export const kaseWord = (n) => plural(n, 'kasa', 'kase')
+export const merendaWord = (n) => plural(n, 'merenda', 'merende')
+
+// Donations are a kasa unless the row says otherwise (rows from before the merenda option).
+export const donationKind = (d) => d.kind ?? 'kasa'
+export const donationCount = (donations, kind) =>
+  donations.filter((d) => donationKind(d) === kind).reduce((n, d) => n + (d.quantity ?? 1), 0)
+export const donationLabel = (d) => {
+  const q = d.quantity ?? 1
+  return `${q} ${(donationKind(d) === 'merenda' ? merendaWord(q) : kaseWord(q)).toUpperCase()}`
+}
+
+// Bonuses: a joker ("skip_next") is available until it has cancelled a multa.
+export const isJoker = (b) => b.reward_kind === 'skip_next'
+export const bonusAvailable = (b) => (isJoker(b) ? b.used_fine_id == null && !b.used_at : !b.used_at)
+export const jokersFor = (bonuses, playerId) =>
+  bonuses.filter((b) => b.player_id === playerId && isJoker(b) && bonusAvailable(b))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
+export const rewardLabel = (b) => (isJoker(b) ? '🃏 Jolly: preklic naslednje multe' : `🎁 ${b.reward}`)

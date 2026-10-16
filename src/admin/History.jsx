@@ -36,7 +36,7 @@ export default function History({ data, run }) {
 function EditFine({ data, fine, run, onClose }) {
   const [form, setForm] = useState({
     player_id: fine.player_id, fine_type_id: fine.fine_type_id, date: fine.date,
-    note: fine.note ?? '', amount: fine.amount ?? '', paid: fine.paid,
+    note: fine.note ?? '', amount: fine.amount ?? '', paid: fine.paid, waived: !!fine.waived,
   })
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
   const type = data.fineTypes.find((t) => t.id === Number(form.fine_type_id))
@@ -47,6 +47,7 @@ function EditFine({ data, fine, run, onClose }) {
     const patch = {
       player_id: Number(form.player_id), fine_type_id: Number(form.fine_type_id), date: form.date,
       note: form.note.trim() || null, paid: form.paid,
+      ...(form.waived !== !!fine.waived ? { waived: form.waived } : {}),
     }
     // Amount follows the new type's price unless an euro amount was typed explicitly.
     if (type.kind !== 'euro') patch.amount = null
@@ -78,6 +79,7 @@ function EditFine({ data, fine, run, onClose }) {
         </div>
         <label>Opomba<input type="text" value={form.note} onChange={set('note')} /></label>
         <label className="check"><input type="checkbox" checked={form.paid} onChange={set('paid')} /> Plačana</label>
+        <label className="check"><input type="checkbox" checked={form.waived} onChange={set('waived')} /> 🃏 Oproščena (se ne šteje)</label>
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Prekliči</button>
           <button className="btn btn-primary">Shrani</button>

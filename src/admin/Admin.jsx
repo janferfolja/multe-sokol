@@ -7,9 +7,11 @@ import History from './History'
 import Players from './Players'
 import FineTypes from './FineTypes'
 import Charity from './Charity'
+import Bonuses from './Bonuses'
 
 const TABS = [
   ['new', '➕ Nove multe'],
+  ['bonus', '🏅 Bonusi'],
   ['charity', '🍻 Dobrodelno'],
   ['pay', '💶 Plačila'],
   ['history', '📜 Zgodovina'],
@@ -86,6 +88,7 @@ export default function Admin({ data, reload }) {
         ))}
       </div>
       {tab === 'new' && <NewFines {...props} />}
+      {tab === 'bonus' && <Bonuses {...props} />}
       {tab === 'charity' && <Charity {...props} />}
       {tab === 'pay' && <Payments {...props} />}
       {tab === 'history' && <History {...props} />}
