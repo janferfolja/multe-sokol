@@ -464,3 +464,9 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 .seg button + button { border-left: 2px solid var(--line); }
 .seg button.on { background: var(--ink); color: var(--paper); }
 .jolly-note { margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--violet-soft); color: var(--violet); font-weight: 700; font-size: 0.9em; }
+
+/* ── PayPal ───────────────────────────────────────────────────── */
+.paypal-row { display: flex; justify-content: center; margin-top: 14px; }
+.modal .paypal-row { margin: 0 0 16px; justify-content: flex-start; }
+.btn-paypal { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; background: #ffc439; color: #16130f; padding: 11px 20px; font-size: 0.95em; }
+.btn-paypal:hover:not(:disabled) { background: #f2b600; }

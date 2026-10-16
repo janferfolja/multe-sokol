@@ -3,6 +3,7 @@ import {
   PODIUM_TITLES, daysSince, multeN, multeWord, plural, formatDate, formatEuro, fullName, initials,
   donationCount, jokersFor, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
+import { PAYPAL_POOL_URL } from '../lib/config'
 
 export default function Home({ data, onPlayer }) {
   const donations = useMemo(() => data.donations ?? [], [data.donations])
@@ -123,6 +124,7 @@ function Overdue({ data, onPlayer }) {
           {expanded ? 'Pokaži manj' : `Pokaži vse (${unpaid.length})`}
         </button>
       )}
+      <div className="paypal-row"><a className="btn btn-paypal" href={PAYPAL_POOL_URL} target="_blank" rel="noopener noreferrer">💳 Plačaj s PayPal</a></div>
     </section>
   )
 }

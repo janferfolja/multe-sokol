@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { donationCount, formatEuro, fullName, initials, playerStats } from '../lib/stats'
 import { BonusList } from './Bonuses'
+import { PAYPAL_POOL_URL } from '../lib/config'
 import { FineList } from './AllFines'
 
 export default function PlayerModal({ data, playerId, onClose }) {
@@ -45,6 +46,7 @@ export default function PlayerModal({ data, playerId, onClose }) {
             <span className="stat-pill-value">{s.pending}{s.pendingEuro > 0 ? ` · ${formatEuro(s.pendingEuro)}` : ''}</span>
           </div>
         </div>
+        {s.pending > 0 && <div className="paypal-row"><a className="btn btn-paypal" href={PAYPAL_POOL_URL} target="_blank" rel="noopener noreferrer">💳 Plačaj s PayPal</a></div>}
         {bonuses.length > 0 && (
           <>
             <h3 className="modal-subtitle">🏅 Bonusi</h3>
