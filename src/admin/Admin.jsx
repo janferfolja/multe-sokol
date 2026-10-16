@@ -15,7 +15,7 @@ const TABS = [
   ['bonus', '🏅 Bonusi'],
   ['charity', '🍻 Dobrodelno'],
   ['pay', '💶 Plačila'],
-  ['history', '📜 Zgodovina'],
+  ['history', '✏️ Uredi multe'],
   ['players', '👥 Igralci'],
   ['types', '📋 Vrste mult'],
 ]

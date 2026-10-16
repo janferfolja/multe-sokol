@@ -46,7 +46,7 @@ export default function Bonuses({ data, onPlayer }) {
         <span className="section-icon">🏅</span>Bonusi
         {bonuses.length > 0 && <span className="count-chip">{bonuses.length}</span>}
       </h2>
-      <p className="hint">Za dobra dejanja. 🃏 Jolly prekliče naslednjo multo: ostane v zgodovini, a se ne šteje.</p>
+      <p className="hint">Za dobra dejanja. 🃏 Jolly prekliče naslednjo multo: ostane na seznamu, a se ne šteje.</p>
       <BonusList data={data} bonuses={bonuses} onPlayer={onPlayer} />
     </section>
   )
