@@ -124,7 +124,7 @@ function Overdue({ data, onPlayer }) {
           {expanded ? 'Pokaži manj' : `Pokaži vse (${unpaid.length})`}
         </button>
       )}
-      <div className="paypal-row"><a className="btn btn-paypal" href={PAYPAL_POOL_URL} target="_blank" rel="noopener noreferrer">💳 Plačaj s PayPal</a></div>
+      <div className="paypal-row"><a className="btn btn-paypal" href={PAYPAL_POOL_URL} target="_blank" rel="noopener noreferrer">💳 Placi zs Paypall</a></div>
     </section>
   )
 }
