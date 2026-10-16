@@ -485,3 +485,4 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 .penalty-levels { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
 .penalty-level { font-size: 0.7em; font-weight: 800; padding: 1px 7px; border-radius: 999px; background: var(--card); border: 1.5px solid var(--orange); color: var(--orange-ink); }
 .penalty-level.l2 { background: var(--orange); color: #fff; }
+.price-badge.doubled { outline: 2px solid var(--orange); outline-offset: 1px; }

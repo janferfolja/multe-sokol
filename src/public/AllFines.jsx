@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { formatDate, fullName, priceLabel, seasonOf, seasonsIn } from '../lib/stats'
+import { formatDate, fullName, priceLabel, fineLabel, seasonOf, seasonsIn } from '../lib/stats'
 import Donations from './Donations'
 import Bonuses from './Bonuses'
 
@@ -23,7 +23,7 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
               <button className="link" onClick={() => onPlayer?.(f.player_id)}>{fullName(p)}</button>
               <div className="fine-type">{t?.name}{f.note ? <span className="fine-note"> · {f.note}</span> : null}</div>
             </div>
-            <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
+            <div className={`price-badge price-${t?.kind} ${f.doubled_at ? 'doubled' : ''}`}>{fineLabel(t, f)}</div>
             {f.waived ? (
               <div className="status-badge waived">🃏 Oproščena</div>
             ) : (

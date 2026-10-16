@@ -19,28 +19,42 @@ export async function addFinesWithJolly(rows, bonuses) {
   return `${multeN(n)} ${plural(n, 'dodana', 'dodane')} ✓` + (j ? ` · 🃏 ${j} ${plural(j, 'oproščena', 'oproščene')} z jollyjem` : '')
 }
 
-// "Ni prnesu multe": level 1 after 14 days unpaid, level 2 after 28 days (the penalty doubles).
+// Unpaid multe: after 14 days a "Ni prnesu multe" penalty (level 1);
+// after 28 days the multa itself doubles (level 2: doubled_at, counts twice).
 export const PENALTY_DAYS = 14
-export const PENALTY_LEVELS = [{ level: 1, days: 14 }, { level: 2, days: 28 }]
+export const DOUBLE_DAYS = 28
 export const penaltyType = (fineTypes) =>
   fineTypes.find((t) => t.name.trim().toLowerCase() === 'ni prnesu multe')
 
-// Unpaid multe with penalty levels that are due but not given yet: [{ fine, levels: [1, 2] }].
-// Penalty fines themselves never trigger another penalty.
+// Unpaid multe with steps due but not done yet: [{ fine, levels: [1, 2] }].
+// Penalty fines themselves never get a penalty or doubling.
 export function overdueForPenalty(fines, now = Date.now()) {
-  const given = new Map() // fine id -> Set of levels already given
-  for (const f of fines) {
-    if (f.penalty_for == null) continue
-    if (!given.has(f.penalty_for)) given.set(f.penalty_for, new Set())
-    given.get(f.penalty_for).add(f.penalty_level ?? 1)
-  }
+  const penalised = new Set(fines.filter((f) => f.penalty_for != null).map((f) => f.penalty_for))
   const ageDays = (f) => (now - new Date(f.date + 'T00:00:00').getTime()) / 86400000
   return fines
     .filter((f) => !f.paid && !f.waived && f.penalty_for == null)
     .map((f) => ({
       fine: f,
-      levels: PENALTY_LEVELS.filter((l) => ageDays(f) >= l.days && !given.get(f.id)?.has(l.level)).map((l) => l.level),
+      levels: [
+        ...(ageDays(f) >= PENALTY_DAYS && !penalised.has(f.id) ? [1] : []),
+        ...(ageDays(f) >= DOUBLE_DAYS && !f.doubled_at ? [2] : []),
+      ],
     }))
     .filter((x) => x.levels.length > 0)
     .sort((a, b) => a.fine.date.localeCompare(b.fine.date) || a.fine.id - b.fine.id)
+}
+
+// Do the due steps: add penalty fines (jolly applies) and double the 28+ day multe.
+export async function applyPenalties(items, type, bonuses, today) {
+  const penaltyRows = items.filter((d) => d.levels.includes(1)).map(({ fine }) => ({
+    player_id: fine.player_id, fine_type_id: type.id, date: today, penalty_for: fine.id,
+    note: `za multo z dne ${fine.date.split('-').reverse().join('/')}`,
+  }))
+  const toDouble = items.filter((d) => d.levels.includes(2)).map((d) => d.fine)
+  const parts = []
+  if (penaltyRows.length) parts.push(await addFinesWithJolly(penaltyRows, bonuses))
+  const now = new Date().toISOString()
+  for (const f of toDouble) await api.updateFine(f.id, { doubled_at: now })
+  if (toDouble.length) parts.push(`⏰⏰ ${toDouble.length} ${plural(toDouble.length, 'podvojena', 'podvojene')}`)
+  return parts.join(' · ')
 }

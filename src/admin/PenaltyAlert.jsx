@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { addFinesWithJolly, overdueForPenalty, penaltyType } from '../lib/fines'
-import { daysSince, formatDate, fullName, plural, todayISO } from '../lib/stats'
+import { applyPenalties, overdueForPenalty, penaltyType } from '../lib/fines'
+import { daysSince, fineLabel, formatDate, fullName, plural, todayISO } from '../lib/stats'
 
-const LEVEL_LABEL = { 1: '14+ dni', 2: '28+ dni · dvojna' }
-
-// Shown on every admin tab: multe unpaid for 14+ / 28+ days, with one tap to add "Ni prnesu multe".
+// Shown on every admin tab: unpaid multe that need "Ni prnesu multe" (14+ days) or doubling (28+ days).
 export default function PenaltyAlert({ data, run }) {
   const [busy, setBusy] = useState(false)
   const [open, setOpen] = useState(false)
@@ -15,18 +13,21 @@ export default function PenaltyAlert({ data, run }) {
   const players = new Map(data.players.map((p) => [p.id, p]))
   const types = new Map(data.fineTypes.map((t) => [t.id, t]))
   const n = due.length
-  const total = due.reduce((sum, d) => sum + d.levels.length, 0)
+  const penalties = due.filter((d) => d.levels.includes(1)).length
   const doubles = due.filter((d) => d.levels.includes(2)).length
+  // Doubling works without the penalty type; penalties need it.
+  const doable = (d) => d.levels.filter((l) => l === 2 || type)
+  const summary = [
+    penalties && type ? `${penalties}× „${type.name}”` : null,
+    doubles ? `${doubles} ${plural(doubles, 'podvojena multa', 'podvojene multe')}` : null,
+  ].filter(Boolean).join(' + ')
 
-  const penalise = async (items) => {
-    if (!type) return
+  const go = async (items) => {
+    const ready = items.map((d) => ({ ...d, levels: doable(d) })).filter((d) => d.levels.length)
+    if (!ready.length) return
     setBusy(true)
-    const rows = items.flatMap(({ fine, levels }) => levels.map((level) => ({
-      player_id: fine.player_id, fine_type_id: type.id, date: todayISO(), penalty_for: fine.id, penalty_level: level,
-      note: `za multo z dne ${formatDate(fine.date)}${level === 2 ? ' · 28+ dni, dvojna' : ''}`,
-    })))
     let msg = ''
-    await run(async () => { msg = await addFinesWithJolly(rows, data.bonuses ?? []) }, () => msg)
+    await run(async () => { msg = await applyPenalties(ready, type, data.bonuses ?? [], todayISO()) }, () => msg)
     setBusy(false)
   }
 
@@ -36,9 +37,8 @@ export default function PenaltyAlert({ data, run }) {
         <div>
           <b>⏰ {n} {plural(n, 'multa ni plačana', 'multe niso plačane')} že 14+ dni</b>
           <div className="penalty-sub">
-            {type
-              ? <>„{type.name}” ({type.price}€) po 14 dneh, še enkrat po 28 dneh (dvojna).{doubles > 0 && <> ⏰⏰ {doubles} že 28+ dni.</>}</>
-              : <>Vrsta „Ni prnesu multe” ne obstaja: dodaj jo v Vrste mult.</>}
+            Po 14 dneh „Ni prnesu multe”{type ? ` (${type.price}€)` : ''}, po 28 dneh se multa podvoji.
+            {!type && penalties > 0 && <> Vrsta „Ni prnesu multe” ne obstaja: dodaj jo v Vrste mult.</>}
           </div>
         </div>
         <button className="btn btn-sm btn-ghost" onClick={() => setOpen(!open)}>{open ? 'Skrij' : 'Pokaži'}</button>
@@ -46,29 +46,31 @@ export default function PenaltyAlert({ data, run }) {
 
       {open && (
         <div className="penalty-list">
-          {due.map((d) => (
-            <div key={d.fine.id} className="penalty-row">
-              <div className="grow">
-                <b>{fullName(players.get(d.fine.player_id))}</b>
-                <div className="muted small">
-                  {types.get(d.fine.fine_type_id)?.name} · {formatDate(d.fine.date)} · +{daysSince(d.fine.date)} dni
+          {due.map((d) => {
+            const t = types.get(d.fine.fine_type_id)
+            return (
+              <div key={d.fine.id} className="penalty-row">
+                <div className="grow">
+                  <b>{fullName(players.get(d.fine.player_id))}</b>
+                  <div className="muted small">{t?.name} · {formatDate(d.fine.date)} · +{daysSince(d.fine.date)} dni</div>
+                  <div className="penalty-levels">
+                    {d.levels.includes(1) && <span className="penalty-level l1">⏰ + „Ni prnesu multe”</span>}
+                    {d.levels.includes(2) && (
+                      <span className="penalty-level l2">⏰⏰ podvoji: {fineLabel(t, d.fine)} → {fineLabel(t, { ...d.fine, doubled_at: 'x' })}</span>
+                    )}
+                  </div>
                 </div>
-                <div className="penalty-levels">
-                  {d.levels.map((l) => <span key={l} className={`penalty-level l${l}`}>{l === 2 ? '⏰⏰' : '⏰'} {LEVEL_LABEL[l]}</span>)}
-                </div>
+                <button className="btn btn-sm" disabled={busy || doable(d).length === 0} onClick={() => go([d])}>Izvedi</button>
               </div>
-              <button className="btn btn-sm" disabled={busy || !type} onClick={() => penalise([d])}>
-                Dodaj{d.levels.length > 1 ? ` (${d.levels.length})` : ''}
-              </button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
-      {type && (
+      {summary && (
         <button className="btn btn-primary btn-block" disabled={busy}
-          onClick={() => confirm(`Dodam ${total}× „${type.name}” (${total * type.price}€ skupaj)?`) && penalise(due)}>
-          Dodaj „{type.name}” ({total})
+          onClick={() => confirm(`Izvedem: ${summary}?`) && go(due)}>
+          Izvedi vse: {summary}
         </button>
       )}
     </section>

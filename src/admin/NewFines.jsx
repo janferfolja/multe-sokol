@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, jokersFor, plural, priceLabel, todayISO } from '../lib/stats'
+import { formatDate, fullName, initials, jokersFor, plural, priceLabel, fineLabel, todayISO } from '../lib/stats'
 import { addFinesWithJolly } from '../lib/fines'
 
 // Add one fine type to one or more players in one go.
@@ -128,7 +128,7 @@ export default function NewFines({ data, run }) {
                 <div key={f.id} className="fine-row">
                   <div className="fine-date">{formatDate(f.date)}</div>
                   <div className="fine-main"><b>{fullName(p)}</b><div className="fine-type">{t?.name}{f.note ? ` · ${f.note}` : ''}</div></div>
-                  <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
+                  <div className={`price-badge price-${t?.kind} ${f.doubled_at ? 'doubled' : ''}`}>{fineLabel(t, f)}</div>
                   <button className="btn btn-sm btn-ghost" onClick={() => run(() => api.deleteFines([f.id]), 'Multa razveljavljena')}>Razveljavi</button>
                 </div>
               )

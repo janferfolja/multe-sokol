@@ -28,11 +28,12 @@ export function playerStats({ players, fineTypes, fines }) {
     const t = typeById.get(f.fine_type_id)
     if (!s || !t) continue
     s.count++
-    if (t.kind === 'euro') s.euro += Number(f.amount ?? 0)
-    else s[t.kind]++
+    const times = fineTimes(f)
+    if (t.kind === 'euro') s.euro += Number(f.amount ?? 0) * times
+    else s[t.kind] += times
     if (!f.paid) {
       s.pending++
-      if (t.kind === 'euro') s.pendingEuro += Number(f.amount ?? 0)
+      if (t.kind === 'euro') s.pendingEuro += Number(f.amount ?? 0) * times
     }
   }
   return [...byPlayer.values()]
@@ -86,3 +87,14 @@ export const jokersFor = (bonuses, playerId) =>
   bonuses.filter((b) => b.player_id === playerId && isJoker(b) && bonusAvailable(b))
     .sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
 export const rewardLabel = (b) => (isJoker(b) ? '🃏 Jolly: preklic naslednje multe' : `🎁 ${b.reward}`)
+
+// A multa unpaid for 28+ days is doubled (doubled_at set): it counts twice.
+export const fineTimes = (f) => (f.doubled_at ? 2 : 1)
+// Price shown on a single multa, including doubling: "6€ ×2", "2 KASE", "MERENDA".
+export const fineLabel = (t, f) => {
+  if (!t) return ''
+  const times = fineTimes(f)
+  if (t.kind === 'euro') return `${formatEuro(Number(f.amount ?? 0) * times)}${times > 1 ? ' ×2' : ''}`
+  if (times === 1) return priceLabel(t.kind, f.amount)
+  return `${times} ${(t.kind === 'kasa' ? kaseWord(times) : merendaWord(times)).toUpperCase()}`
+}

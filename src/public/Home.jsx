@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   PODIUM_TITLES, daysSince, multeN, multeWord, plural, formatDate, formatEuro, fullName, initials,
-  donationCount, jokersFor, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
+  donationCount, jokersFor, playerStats, priceLabel, fineLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
 import { PAYPAL_POOL_URL } from '../lib/config'
 import { PENALTY_DAYS } from '../lib/fines'
@@ -112,7 +112,7 @@ function Overdue({ data, onPlayer }) {
                 <div className="upcoming-desc">{t?.name}{f.note ? ` · ${f.note}` : ''}</div>
               </div>
               <div className="upcoming-badges-container">
-                <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
+                <div className={`price-badge price-${t?.kind} ${f.doubled_at ? 'doubled' : ''}`}>{fineLabel(t, f)}</div>
                 <div className={`days-overdue-badge ${daysSince(f.date) >= PENALTY_DAYS ? 'late' : ''}`}>
                   {daysSince(f.date) >= 2 * PENALTY_DAYS ? '⏰⏰ ' : daysSince(f.date) >= PENALTY_DAYS ? '⏰ ' : ''}+{daysSince(f.date)} dni
                 </div>

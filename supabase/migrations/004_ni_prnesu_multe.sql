@@ -1,9 +1,16 @@
--- "Ni prnesu multe": penalty fines for a multa that stays unpaid.
---   level 1 after 14 days, level 2 after 28 days (so the penalty doubles).
--- penalty_for points to the overdue multa; each level can be given only once per multa.
-alter table public.fines
-  add column penalty_for bigint references public.fines on delete set null,
-  add column penalty_level smallint check (penalty_level in (1, 2));
+-- Unpaid multe:
+--   after 14 days → a "Ni prnesu multe" penalty fine; penalty_for points to the overdue multa
+--                   (only one penalty per multa).
+--   after 28 days → the multa itself doubles: doubled_at is set and it counts twice
+--                   (3€ → 6€, KASA → 2 KASE, MERENDA → 2 MERENDE).
+-- Safe to run even if an earlier version of this file was already run.
 
-create unique index fines_one_penalty_per_level on public.fines (penalty_for, penalty_level)
+alter table public.fines add column if not exists penalty_for bigint references public.fines on delete set null;
+alter table public.fines add column if not exists doubled_at timestamptz;
+
+-- cleanup from the earlier version of this file
+drop index if exists public.fines_one_penalty_per_level;
+alter table public.fines drop column if exists penalty_level;
+
+create unique index if not exists fines_one_penalty_per_fine on public.fines (penalty_for)
   where penalty_for is not null;
