@@ -8,6 +8,7 @@ import Players from './Players'
 import FineTypes from './FineTypes'
 import Charity from './Charity'
 import Bonuses from './Bonuses'
+import PenaltyAlert from './PenaltyAlert'
 
 const TABS = [
   ['new', '➕ Nove multe'],
@@ -50,7 +51,7 @@ export default function Admin({ data, reload }) {
     try {
       await fn()
       await reload()
-      setToast({ kind: 'ok', text: message })
+      setToast({ kind: 'ok', text: typeof message === 'function' ? message() : message })
       return true
     } catch (e) {
       setToast({ kind: 'err', text: `Napaka: ${e.message}` })
@@ -80,6 +81,7 @@ export default function Admin({ data, reload }) {
           <button className="btn btn-sm btn-ghost" onClick={() => api.signOut()}>Odjava</button>
         </div>
       </div>
+      <PenaltyAlert {...props} />
       <div className="tabs" role="tablist">
         {TABS.map(([id, label]) => (
           <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>

@@ -4,6 +4,7 @@ import {
   donationCount, jokersFor, playerStats, priceLabel, seasonOf, seasonsIn, teamTotals,
 } from '../lib/stats'
 import { PAYPAL_POOL_URL } from '../lib/config'
+import { PENALTY_DAYS } from '../lib/fines'
 
 export default function Home({ data, onPlayer }) {
   const donations = useMemo(() => data.donations ?? [], [data.donations])
@@ -112,7 +113,9 @@ function Overdue({ data, onPlayer }) {
               </div>
               <div className="upcoming-badges-container">
                 <div className={`price-badge price-${t?.kind}`}>{t && priceLabel(t.kind, f.amount)}</div>
-                <div className="days-overdue-badge">+{daysSince(f.date)} dni</div>
+                <div className={`days-overdue-badge ${daysSince(f.date) >= PENALTY_DAYS ? 'late' : ''}`}>
+                  {daysSince(f.date) >= 2 * PENALTY_DAYS ? '⏰⏰ ' : daysSince(f.date) >= PENALTY_DAYS ? '⏰ ' : ''}+{daysSince(f.date)} dni
+                </div>
                 <div className="upcoming-date-badge">{formatDate(f.date)}</div>
               </div>
             </button>

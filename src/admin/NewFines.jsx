@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, jokersFor, multeN, plural, priceLabel, todayISO } from '../lib/stats'
+import { formatDate, fullName, initials, jokersFor, plural, priceLabel, todayISO } from '../lib/stats'
+import { addFinesWithJolly } from '../lib/fines'
 
 // Add one fine type to one or more players in one go.
 export default function NewFines({ data, run }) {
@@ -37,21 +38,9 @@ export default function NewFines({ data, run }) {
     e.preventDefault()
     if (!type || picked.size === 0) return
     setBusy(true)
-    // A player with a jolly gets this multa cancelled (oproščena), and the jolly is used up.
-    const jolly = new Map([...picked].map((pid) => [pid, jokersFor(bonuses, pid)[0]]).filter(([, b]) => b))
-    const rows = [...picked].map((player_id) => ({
-      player_id, fine_type_id: type.id, date, note: note.trim() || null,
-      ...(jolly.has(player_id) ? { waived: true } : {}),
-    }))
-    const n = rows.length
-    const msg = `${multeN(n)} ${plural(n, 'dodana', 'dodane')} ✓` + (jolly.size ? ` · 🃏 ${jolly.size} ${plural(jolly.size, 'oproščena', 'oproščene')} z jollyjem` : '')
-    const ok = await run(async () => {
-      const added = await api.addFines(rows)
-      for (const f of added ?? []) {
-        const b = jolly.get(f.player_id)
-        if (b) await api.saveBonus({ id: b.id, used_fine_id: f.id, used_at: new Date().toISOString() })
-      }
-    }, msg)
+    const rows = [...picked].map((player_id) => ({ player_id, fine_type_id: type.id, date, note: note.trim() || null }))
+    let msg = ''
+    const ok = await run(async () => { msg = await addFinesWithJolly(rows, bonuses) }, () => msg)
     setBusy(false)
     if (ok) {
       setPicked(new Set())
