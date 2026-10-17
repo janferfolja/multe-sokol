@@ -169,3 +169,7 @@ alter table public.fines drop column if exists penalty_level;
 
 create unique index if not exists fines_one_penalty_per_fine on public.fines (penalty_for)
   where penalty_for is not null;
+
+-- ── Osebni rekord punti (see migrations/006_rekord_punti.sql) ──
+-- The multa for a new personal points record also stores how many points were scored.
+alter table public.fines add column if not exists points smallint check (points >= 0);

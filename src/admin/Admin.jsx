@@ -9,6 +9,7 @@ import FineTypes from './FineTypes'
 import Charity from './Charity'
 import Bonuses from './Bonuses'
 import PenaltyAlert from './PenaltyAlert'
+import Records from './Records'
 
 const TABS = [
   ['new', '➕ Nove multe'],
@@ -18,6 +19,7 @@ const TABS = [
   ['history', '🗂️ Arhiv'],
   ['players', '👥 Igralci'],
   ['types', '📋 Vrste mult'],
+  ['records', '🎯 Rekordi'],
 ]
 
 export default function Admin({ data, reload }) {
@@ -121,6 +123,7 @@ export default function Admin({ data, reload }) {
       {tab === 'history' && <History {...props} />}
       {tab === 'players' && <Players {...props} />}
       {tab === 'types' && <FineTypes {...props} />}
+      {tab === 'records' && <Records {...props} />}
       {toast && <div className={`toast toast-${toast.kind}`} role="status">{toast.text}</div>}
     </>
   )

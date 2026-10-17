@@ -71,6 +71,13 @@ export const donorName = (d, players) =>
 export const kaseWord = (n) => plural(n, 'kasa', 'kase')
 export const merendaWord = (n) => plural(n, 'merenda', 'merende')
 
+// Kase & merende leaderboard: a merenda is worth 2 kase.
+export const KASE_PER_MERENDA = 2
+export const kasaPoints = (s) => s.kasa + KASE_PER_MERENDA * s.merenda
+export const kasaRanking = (stats) =>
+  stats.filter((s) => kasaPoints(s) > 0)
+    .sort((a, b) => kasaPoints(b) - kasaPoints(a) || b.merenda - a.merenda || a.player.surname.localeCompare(b.player.surname))
+
 // Donations are a kasa unless the row says otherwise (rows from before the merenda option).
 export const donationKind = (d) => d.kind ?? 'kasa'
 export const donationCount = (donations, kind) =>
@@ -78,6 +85,24 @@ export const donationCount = (donations, kind) =>
 export const donationLabel = (d) => {
   const q = d.quantity ?? 1
   return `${q} ${(donationKind(d) === 'merenda' ? merendaWord(q) : kaseWord(q)).toUpperCase()}`
+}
+
+// "Osebni rekord punti": the multa for a new personal points record also stores the points scored.
+export const isRecordType = (t) => t?.name.trim().toLowerCase() === 'osebni rekord punti'
+// Slovenian: 1 točka, 2 točki, 3-4 točke, 5+ točk (by the last two digits).
+export const tockeWord = (n) => {
+  const m = n % 100
+  return m === 1 ? 'točka' : m === 2 ? 'točki' : m === 3 || m === 4 ? 'točke' : 'točk'
+}
+// Each player's best: Map(player_id → the fine with the most points; the earliest one on a tie).
+export function pointsRecords(fines) {
+  const best = new Map()
+  for (const f of fines) {
+    if (f.points == null) continue
+    const cur = best.get(f.player_id)
+    if (!cur || f.points > cur.points || (f.points === cur.points && f.date < cur.date)) best.set(f.player_id, f)
+  }
+  return best
 }
 
 // Bonuses: a joker ("skip_next") is available until it has cancelled a multa.

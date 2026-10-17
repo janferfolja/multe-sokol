@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
-import { fullName, priceLabel } from '../lib/stats'
+import { fullName, isRecordType, priceLabel } from '../lib/stats'
 import { FineList, useFineFilters } from '../public/AllFines'
 
 export default function History({ data, run }) {
@@ -36,7 +36,7 @@ export default function History({ data, run }) {
 function EditFine({ data, fine, run, onClose }) {
   const [form, setForm] = useState({
     player_id: fine.player_id, fine_type_id: fine.fine_type_id, date: fine.date,
-    note: fine.note ?? '', amount: fine.amount ?? '', paid: fine.paid, waived: !!fine.waived, doubled: !!fine.doubled_at,
+    note: fine.note ?? '', amount: fine.amount ?? '', points: fine.points ?? '', paid: fine.paid, waived: !!fine.waived, doubled: !!fine.doubled_at,
   })
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
   const type = data.fineTypes.find((t) => t.id === Number(form.fine_type_id))
@@ -54,6 +54,9 @@ function EditFine({ data, fine, run, onClose }) {
     if (type.kind !== 'euro') patch.amount = null
     else if (typeChanged) patch.amount = type.price
     else if (form.amount !== '') patch.amount = Number(form.amount)
+    // Points only belong on "Osebni rekord punti"; leave the field out otherwise.
+    if (isRecordType(type)) patch.points = form.points === '' ? null : Number(form.points)
+    else if (fine.points != null) patch.points = null
     if (await run(() => api.updateFine(fine.id, patch), 'Multa posodobljena ✓')) onClose()
   }
 
@@ -76,6 +79,9 @@ function EditFine({ data, fine, run, onClose }) {
           <label>Datum<input type="date" value={form.date} onChange={set('date')} required /></label>
           {type?.kind === 'euro' && !typeChanged && (
             <label>Znesek €<input type="number" min="0" step="0.5" value={form.amount} onChange={set('amount')} /></label>
+          )}
+          {isRecordType(type) && (
+            <label>🎯 Točke<input type="number" inputMode="numeric" min="0" step="1" value={form.points} onChange={set('points')} /></label>
           )}
         </div>
         <label>Opomba<input type="text" value={form.note} onChange={set('note')} /></label>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   PODIUM_TITLES, daysSince, multeN, multeWord, plural, formatDate, formatEuro, fullName, initials,
   donationCount, jokersFor, playerStats, priceLabel, fineLabel, seasonOf, seasonsIn, teamTotals,
+  KASE_PER_MERENDA, kasaPoints, kasaRanking, kaseWord, merendaWord,
 } from '../lib/stats'
 import { PAYPAL_POOL_URL } from '../lib/config'
 import { PENALTY_DAYS } from '../lib/fines'
@@ -74,8 +75,57 @@ export default function Home({ data, onPlayer }) {
         )}
       </section>
 
+      <KasaBoard stats={stats} onPlayer={onPlayer} />
+
       <Legend fineTypes={data.fineTypes} />
     </>
+  )
+}
+
+// Separate ranking for kase & merende only, scored in kase (1 merenda = 2 kase).
+function KasaBoard({ stats, onPlayer }) {
+  const ranked = kasaRanking(stats)
+  return (
+    <section className="section">
+      <h2 className="section-title"><span className="section-icon">🍺</span>Lestvica kas in merend</h2>
+      <p className="hint">Šteje v kasah: 1 merenda = {KASE_PER_MERENDA} kase.</p>
+      {ranked.length === 0 ? (
+        <p className="empty">V tej sezoni še ni nobene kase ali merende.</p>
+      ) : (
+        <ol className="rank-board">
+          {ranked.map((s, i) => (
+            <RankRow
+              key={s.player.id} i={i} player={s.player} onPlayer={onPlayer}
+              value={kasaPoints(s)} unit={kaseWord(kasaPoints(s))}
+              sub={<>
+                {s.kasa > 0 && <span>🍺 {s.kasa} {kaseWord(s.kasa)}</span>}
+                {s.merenda > 0 && <span>🍕 {s.merenda} {merendaWord(s.merenda)}</span>}
+              </>}
+            />
+          ))}
+        </ol>
+      )}
+    </section>
+  )
+}
+
+function RankRow({ i, player, value, unit, sub, onPlayer }) {
+  const medals = ['🥇', '🥈', '🥉']
+  return (
+    <li>
+      <button className="rank-row" onClick={() => onPlayer(player.id)}>
+        <span className="rank-pos">{medals[i] ?? i + 1}</span>
+        <div className="player-avatar player-avatar-sm">{initials(player)}</div>
+        <div className="rank-info">
+          <strong>{fullName(player)}</strong>
+          <span className="rank-sub">{sub}</span>
+        </div>
+        <div className="player-card-count">
+          <span className="player-card-count-num">{value}</span>
+          <span className="player-card-count-label">{unit}</span>
+        </div>
+      </button>
+    </li>
   )
 }
 
@@ -233,7 +283,7 @@ function Legend({ fineTypes }) {
           </div>
         ))}
       </div>
-      <p className="legend-note"><b>KASA</b> = Kasa bjre · <b>MERENDA</b> = Kasa + Jedača</p>
+      <p className="legend-note"><b>KASA</b> = Kasa bjre · <b>MERENDA</b> = Kasa + Jedača = 2 KASE</p>
     </section>
   )
 }

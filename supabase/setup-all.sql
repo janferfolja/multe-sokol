@@ -155,7 +155,7 @@ insert into public.fine_types (id, name, kind, price, active) overriding system 
   (23, 'Rojstni dan', 'merenda', null, true),
   (24, 'Merenda misc', 'merenda', null, true),
   (25, 'Sesto uomo alla Sasha', 'kasa', null, true),
-  (26, 'Esordio', 'kasa', null, true);
+  (26, 'Esordio', 'merenda', null, true);
 
 insert into public.fines (id, player_id, fine_type_id, date, amount, note, paid, paid_at, created_at, created_by) overriding system value values
   (1, 16, 23, '2025-06-27', null, 'BD', true, '2025-06-27T12:00:00Z', '2025-06-27T12:00:00Z', 'import'),

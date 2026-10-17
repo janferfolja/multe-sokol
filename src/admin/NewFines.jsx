@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, jokersFor, multeN, plural, priceLabel, fineLabel, todayISO } from '../lib/stats'
+import {
+  formatDate, fullName, initials, isRecordType, jokersFor, multeN, plural, pointsRecords, priceLabel, fineLabel, todayISO, tockeWord,
+} from '../lib/stats'
 import { addFinesWithJolly } from '../lib/fines'
 
 // Add one fine type to one or more players in one go.
@@ -9,6 +11,7 @@ export default function NewFines({ data, run }) {
   const [typeId, setTypeId] = useState('')
   const [picked, setPicked] = useState(() => new Set())
   const [note, setNote] = useState('')
+  const [points, setPoints] = useState({}) // player_id → typed points, for "Osebni rekord punti"
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -21,6 +24,8 @@ export default function NewFines({ data, run }) {
   const hasJolly = (pid) => jokersFor(bonuses, pid).length > 0
   const jollyPicked = [...picked].filter(hasJolly)
   const type = data.fineTypes.find((t) => t.id === Number(typeId))
+  const isRecord = isRecordType(type)
+  const records = useMemo(() => pointsRecords(data.fines), [data.fines])
   const needle = search.trim().toLowerCase()
   const visible = needle
     ? players.filter((p) => `${fullName(p)} ${p.alias ?? ''}`.toLowerCase().includes(needle))
@@ -38,13 +43,17 @@ export default function NewFines({ data, run }) {
     e.preventDefault()
     if (!type || picked.size === 0) return
     setBusy(true)
-    const rows = [...picked].map((player_id) => ({ player_id, fine_type_id: type.id, date, note: note.trim() || null }))
+    const rows = [...picked].map((player_id) => ({
+      player_id, fine_type_id: type.id, date, note: note.trim() || null,
+      ...(isRecord ? { points: Number(points[player_id]) } : {}),
+    }))
     let msg = ''
     const ok = await run(async () => { msg = await addFinesWithJolly(rows, bonuses) }, () => msg)
     setBusy(false)
     if (ok) {
       setPicked(new Set())
       setNote('')
+      setPoints({})
       setSearch('')
     }
   }
@@ -98,6 +107,32 @@ export default function NewFines({ data, run }) {
           </div>
         </fieldset>
 
+        {isRecord && picked.size > 0 && (
+          <fieldset className="player-picker">
+            <legend>🎯 Točke</legend>
+            {[...picked].map((pid) => {
+              const p = players.find((x) => x.id === pid)
+              const prev = records.get(pid)?.points
+              const typed = points[pid] ?? ''
+              return (
+                <label key={pid} className="points-row">
+                  <span className="grow">
+                    {fullName(p)}
+                    <span className="points-prev">
+                      {prev != null ? `dosedanji rekord: ${prev} ${tockeWord(prev)}` : 'še brez vpisanega rekorda'}
+                      {prev != null && typed !== '' && Number(typed) <= prev && <b className="points-warn"> · ni nad rekordom</b>}
+                    </span>
+                  </span>
+                  <input
+                    type="number" inputMode="numeric" min="0" step="1" required value={typed} aria-label={`Točke: ${fullName(p)}`}
+                    onChange={(e) => setPoints((prevPts) => ({ ...prevPts, [pid]: e.target.value }))}
+                  />
+                </label>
+              )
+            })}
+          </fieldset>
+        )}
+
         <label>
           Opomba (neobvezno)
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="npr. trening v torek, slika v skupini…" />
@@ -127,7 +162,7 @@ export default function NewFines({ data, run }) {
               return (
                 <div key={f.id} className="fine-row">
                   <div className="fine-date">{formatDate(f.date)}</div>
-                  <div className="fine-main"><b>{fullName(p)}</b><div className="fine-type">{t?.name}{f.note ? ` · ${f.note}` : ''}</div></div>
+                  <div className="fine-main"><b>{fullName(p)}</b><div className="fine-type">{t?.name}{f.points != null ? ` · 🎯 ${f.points} ${tockeWord(f.points)}` : ''}{f.note ? ` · ${f.note}` : ''}</div></div>
                   <div className={`price-badge price-${t?.kind} ${f.doubled_at ? 'doubled' : ''}`}>{fineLabel(t, f)}</div>
                   <button className="btn btn-sm btn-ghost" onClick={() => run(() => api.deleteFines([f.id]), 'Multa razveljavljena')}>Razveljavi</button>
                 </div>
