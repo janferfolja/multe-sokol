@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { formatDate, fullName, initials, jokersFor, plural, priceLabel, fineLabel, todayISO } from '../lib/stats'
+import { formatDate, fullName, initials, jokersFor, multeN, plural, priceLabel, fineLabel, todayISO } from '../lib/stats'
 import { addFinesWithJolly } from '../lib/fines'
 
 // Add one fine type to one or more players in one go.
