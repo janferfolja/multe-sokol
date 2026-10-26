@@ -53,7 +53,7 @@ export default function Home({ data, onPlayer }) {
         {totals.sponsor && (
           <button className="sponsor-badge" onClick={() => onPlayer(totals.sponsor.player.id)}>
             <span className="sponsor-label">💰 Uradni sponzor</span>
-            <span className="sponsor-name">{fullName(totals.sponsor.player)}</span>
+            <span className="sponsor-name">{totals.sponsor.player.alias || fullName(totals.sponsor.player)}</span>
             <span className="sponsor-amount">{formatEuro(totals.sponsor.euro)}</span>
           </button>
         )}
@@ -117,7 +117,8 @@ function RankRow({ i, player, value, unit, sub, onPlayer }) {
         <span className="rank-pos">{medals[i] ?? i + 1}</span>
         <div className="player-avatar player-avatar-sm">{initials(player)}</div>
         <div className="rank-info">
-          <strong>{fullName(player)}</strong>
+          <strong>{player.alias || fullName(player)}</strong>
+          {player.alias && <span className="rank-sub">{fullName(player)}</span>}
           <span className="rank-sub">{sub}</span>
         </div>
         <div className="player-card-count">
@@ -158,7 +159,7 @@ function Overdue({ data, onPlayer }) {
             <button key={f.id} className="upcoming-multa-item" onClick={() => onPlayer(f.player_id)}>
               <div className="player-avatar">{initials(p)}</div>
               <div className="upcoming-info">
-                <div className="upcoming-player">{fullName(p)}</div>
+                <div className="upcoming-player">{p?.alias || fullName(p)}{p?.alias && <span className="upcoming-fullname"> · {fullName(p)}</span>}</div>
                 <div className="upcoming-desc">{t?.name}{f.note ? ` · ${f.note}` : ''}</div>
               </div>
               <div className="upcoming-badges-container">
@@ -194,8 +195,8 @@ function Podium({ stats, bonuses, onPlayer }) {
           <button key={i} className={`podium-slot podium-slot-${i + 1}`} onClick={() => onPlayer(s.player.id)}>
             <div className="podium-card">
               <div className="podium-emoji">{medals[i]}</div>
-              <div className="podium-name">{fullName(s.player)}</div>
-              {s.player.alias && <div className="podium-alias">"{s.player.alias}"</div>}
+              <div className="podium-name">{s.player.alias || fullName(s.player)}</div>
+              {s.player.alias && <div className="podium-alias">{fullName(s.player)}</div>}
               <div className="podium-title">{PODIUM_TITLES[i]}</div>
               <div className="podium-stats">
                 <span>{multeN(s.count)}</span><span className="podium-stats-sep">·</span><span>{formatEuro(s.euro)}</span>
@@ -220,8 +221,8 @@ function PlayerCard({ s, max, bonuses, onPlayer }) {
         <div className="player-card-id">
           <div className="player-avatar player-avatar-sm">{initials(s.player)}</div>
           <div className="player-card-names">
-            <strong>{fullName(s.player)}</strong>
-            {s.player.alias && <span className="player-card-alias">"{s.player.alias}"</span>}
+            <strong>{s.player.alias || fullName(s.player)}</strong>
+            {s.player.alias && <span className="player-card-alias">{fullName(s.player)}</span>}
           </div>
         </div>
         <div className="player-card-count">

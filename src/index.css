@@ -541,3 +541,4 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 @media (prefers-reduced-motion: reduce) { .slide-in-left, .slide-in-right { animation: none; } }
 /* clip (not hidden) so the slide doesn't cause sideways scroll and sticky bars keep working */
 main { overflow-x: clip; }
+.upcoming-fullname { font-weight: 500; color: var(--ink-3); font-size: 0.88em; }
