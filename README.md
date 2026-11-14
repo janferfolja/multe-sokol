@@ -33,6 +33,8 @@ Without Supabase keys the app runs in **demo mode**: it uses the imported data a
 3. **Settings → Secrets and variables → Actions → Variables**: add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The anon key is meant to be public; the database's row-level security does the protecting.
 4. Push to `main`. The workflow builds and deploys.
 
+If GitHub Actions can't run (e.g. the account is locked), `npm run deploy` builds locally and pushes the site to the `gh-pages` branch instead. Pages must then be set to **Settings → Pages → Source: Deploy from a branch → gh-pages**.
+
 For local development against the real database, copy `.env.example` to `.env.local` and fill it in.
 
 ## Daily use
