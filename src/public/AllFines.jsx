@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { formatDate, fullName, priceLabel, fineLabel, seasonOf, seasonsIn, tockeWord } from '../lib/stats'
 import Donations from './Donations'
 import Bonuses from './Bonuses'
+import Roulette from './Roulette'
+import { spinWaiveBadge } from '../lib/roulette'
 
 // Filterable list of fines. Used publicly and, with `renderActions`/`selectable`, in admin.
 export function FineList({ data, fines, onPlayer, selectable, selected, onToggle, renderActions }) {
@@ -25,7 +27,7 @@ export function FineList({ data, fines, onPlayer, selectable, selected, onToggle
             </div>
             <div className={`price-badge price-${t?.kind} ${f.doubled_at ? 'doubled' : ''}`}>{fineLabel(t, f)}</div>
             {f.waived ? (
-              <div className="status-badge waived">🃏 Oproščena</div>
+              <div className="status-badge waived">{spinWaiveBadge(f, data) ?? '🃏 Oproščena'}</div>
             ) : (
               <div className={`status-badge ${f.paid ? 'paid' : 'unpaid'}`}>{f.paid ? 'Plačana' : 'Neplačana'}</div>
             )}
@@ -106,6 +108,7 @@ export default function AllFines({ data, onPlayer }) {
         )}
       </section>
       <Bonuses data={data} onPlayer={onPlayer} />
+      <Roulette data={data} onPlayer={onPlayer} />
       <Donations data={data} onPlayer={onPlayer} />
     </>
   )

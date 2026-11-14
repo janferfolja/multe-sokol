@@ -10,10 +10,12 @@ import Charity from './Charity'
 import Bonuses from './Bonuses'
 import PenaltyAlert from './PenaltyAlert'
 import Records from './Records'
+import Roulette from './Roulette'
 
 const TABS = [
   ['new', '➕ Nove multe'],
   ['bonus', '🏅 Bonusi'],
+  ['roulette', '🎰 Ruleta'],
   ['charity', '🍻 Dobrodelno'],
   ['pay', '💶 Plačila'],
   ['history', '🗂️ Arhiv'],
@@ -118,6 +120,7 @@ export default function Admin({ data, reload }) {
       </nav>
       {tab === 'new' && <NewFines {...props} />}
       {tab === 'bonus' && <Bonuses {...props} />}
+      {tab === 'roulette' && <Roulette {...props} />}
       {tab === 'charity' && <Charity {...props} />}
       {tab === 'pay' && <Payments {...props} />}
       {tab === 'history' && <History {...props} />}

@@ -2,20 +2,25 @@ import { api } from './api'
 import { jokersFor, multeN, plural } from './stats'
 
 // Add fines, letting each player's available jollies cancel them (oldest jolly first, one per fine).
-// Returns the confirmation message for the toast.
-export async function addFinesWithJolly(rows, bonuses) {
+// Returns the inserted fines (same order as rows) and how many a jolly cancelled.
+export async function insertFinesWithJolly(rows, bonuses) {
   const free = new Map()
   const use = rows.map((r) => {
     if (!free.has(r.player_id)) free.set(r.player_id, jokersFor(bonuses, r.player_id))
     return free.get(r.player_id).shift() ?? null
   })
-  const added = await api.addFines(rows.map((r, i) => (use[i] ? { ...r, waived: true } : r)))
+  const added = (await api.addFines(rows.map((r, i) => (use[i] ? { ...r, waived: true } : r)))) ?? []
   // Inserted rows come back in the same order as sent.
-  for (const [i, f] of (added ?? []).entries()) {
+  for (const [i, f] of added.entries()) {
     if (use[i]) await api.saveBonus({ id: use[i].id, used_fine_id: f.id, used_at: new Date().toISOString() })
   }
+  return { added, jollies: use.filter(Boolean).length }
+}
+
+// Same, returning the confirmation message for the toast.
+export async function addFinesWithJolly(rows, bonuses) {
+  const { jollies: j } = await insertFinesWithJolly(rows, bonuses)
   const n = rows.length
-  const j = use.filter(Boolean).length
   return `${multeN(n)} ${plural(n, 'dodana', 'dodane')} ✓` + (j ? ` · 🃏 ${j} ${plural(j, 'oproščena', 'oproščene')} z jollyjem` : '')
 }
 

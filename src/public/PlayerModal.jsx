@@ -3,6 +3,8 @@ import { donationCount, formatEuro, fullName, initials, playerStats } from '../l
 import { BonusList } from './Bonuses'
 import { PAYPAL_POOL_URL } from '../lib/config'
 import { FineList } from './AllFines'
+import { SpinList } from './Roulette'
+import { coinsByPlayer } from '../lib/roulette'
 
 export default function PlayerModal({ data, playerId, onClose }) {
   useEffect(() => {
@@ -18,6 +20,8 @@ export default function PlayerModal({ data, playerId, onClose }) {
   const charityKasa = donationCount(own, 'kasa')
   const charityMerenda = donationCount(own, 'merenda')
   const bonuses = (data.bonuses ?? []).filter((b) => b.player_id === playerId)
+  const spins = (data.spins ?? []).filter((x) => x.player_id === playerId)
+  const coins = coinsByPlayer(data).get(playerId)?.length ?? 0
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -41,6 +45,9 @@ export default function PlayerModal({ data, playerId, onClose }) {
           {charityMerenda > 0 && (
             <div className="stat-pill"><span className="stat-pill-label">🍕 Dobr. merende</span><span className="stat-pill-value">{charityMerenda}</span></div>
           )}
+          {(coins > 0 || spins.length > 0) && (
+            <div className="stat-pill"><span className="stat-pill-label">🪙 Kovanci</span><span className="stat-pill-value">{coins}</span></div>
+          )}
           <div className="stat-pill stat-pill-pending">
             <span className="stat-pill-label">Za plačat</span>
             <span className="stat-pill-value">{s.pending}{s.pendingEuro > 0 ? ` · ${formatEuro(s.pendingEuro)}` : ''}</span>
@@ -51,9 +58,15 @@ export default function PlayerModal({ data, playerId, onClose }) {
           <>
             <h3 className="modal-subtitle">🏅 Bonusi</h3>
             <BonusList data={data} bonuses={bonuses} />
-            <h3 className="modal-subtitle">📜 Multe</h3>
           </>
         )}
+        {spins.length > 0 && (
+          <>
+            <h3 className="modal-subtitle">🎰 Ruleta</h3>
+            <SpinList data={data} spins={spins} />
+          </>
+        )}
+        {(bonuses.length > 0 || spins.length > 0) && <h3 className="modal-subtitle">📜 Multe</h3>}
         <FineList data={data} fines={fines} />
       </div>
     </div>

@@ -511,7 +511,7 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 /* ── Admin tabs: all visible, sticky ──────────────────────────── */
 .admin-tabs {
   position: sticky; top: 0; z-index: 20;
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px;
   margin: 0 -6px 16px; padding: 8px 6px;
   background: var(--paper);
   border-bottom: 2px solid var(--line-soft);
@@ -528,7 +528,7 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 /* the Plačila bulk bar sticks just under the tab bar */
 .bulk-bar { top: var(--admin-tabs-h, 0px); }
 @media (max-width: 600px) {
-  .admin-tabs { grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 6px; }
+  .admin-tabs { grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 6px; }
   .admin-tabs button { padding: 6px 2px; }
   .admin-tab-label { font-size: 0.68em; }
 }
@@ -542,3 +542,97 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 /* clip (not hidden) so the slide doesn't cause sideways scroll and sticky bars keep working */
 main { overflow-x: clip; }
 .upcoming-fullname { font-weight: 500; color: var(--ink-3); font-size: 0.88em; }
+
+/* ── Ruleta ───────────────────────────────────────────────────── */
+.wheel { position: relative; width: 100%; max-width: 420px; margin: 18px auto; }
+.wheel-compact { max-width: 240px; margin: 0; flex: 0 0 auto; width: 100%; }
+.wheel svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(4px 4px 0 var(--line)); }
+.wheel-empty { text-align: center; color: var(--ink-3); padding: 30px 0; }
+.wheel-rim { fill: #16130f; stroke: var(--line); stroke-width: 2; }
+.wheel-slice path { stroke: #16130f; stroke-width: 0.6; transition: opacity 0.3s, filter 0.3s; }
+.wheel-slice.bonus.a path { fill: #1f9d5b; }
+.wheel-slice.bonus.b path { fill: #2fbf73; }
+.wheel-slice.malus.a path { fill: #ff5a1f; }
+.wheel-slice.malus.b path { fill: #d23c0a; }
+.wheel-divider { stroke: #ffd23f; stroke-width: 1; opacity: 0.85; }
+.wheel-label, .wheel-emoji { dominant-baseline: central; user-select: none; pointer-events: none; }
+.wheel-label { fill: #fff; font-family: var(--font); font-weight: 900; text-anchor: end; paint-order: stroke; stroke: rgba(22, 19, 15, 0.45); stroke-width: 1.4px; }
+.wheel-emoji { text-anchor: middle; }
+.wheel-hub { fill: #ffd23f; stroke: #16130f; stroke-width: 3; }
+.wheel-hub-logo { font-size: 16px; text-anchor: middle; dominant-baseline: central; user-select: none; }
+.wheel-pointer path { fill: #ffd23f; stroke: #16130f; stroke-width: 2.5; stroke-linejoin: round; }
+.wheel-pointer { transform-box: view-box; transform-origin: 110px 0; }
+.wheel-bulb { fill: #ffd23f; opacity: 0.9; }
+.wheel.spinning .wheel-bulb.even { animation: bulb 0.36s steps(1) infinite; }
+.wheel.spinning .wheel-bulb.odd { animation: bulb 0.36s steps(1) infinite 0.18s; }
+.wheel.has-winner .wheel-bulb { animation: bulb 0.5s steps(1) 6; }
+@keyframes bulb { 0% { opacity: 1; fill: #fff6c9; } 50% { opacity: 0.25; fill: #ffd23f; } }
+.wheel.has-winner .wheel-slice:not(.win) path { opacity: 0.35; }
+.wheel-slice.win path { animation: win-pulse 0.7s ease-in-out 4 alternate; }
+@keyframes win-pulse { to { filter: brightness(1.35); } }
+@media (prefers-reduced-motion: reduce) {
+  .wheel .wheel-bulb, .wheel-slice.win path { animation: none !important; }
+}
+
+.roulette-players { margin-bottom: 4px; }
+.coin-count { font-family: var(--mono); font-size: 0.85em; font-weight: 800; color: #8a6400; }
+.chip.on .coin-count { color: var(--yellow); }
+@media (prefers-color-scheme: dark) { .coin-count { color: var(--yellow); } }
+.spin-button { margin-top: 4px; }
+
+.spin-result {
+  display: flex; align-items: center; gap: 14px; margin: 0 0 14px; padding: 14px 16px;
+  border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  animation: result-pop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+.spin-result.bonus { background: var(--green-soft); }
+.spin-result.malus { background: var(--orange-soft); }
+.spin-result-emoji { font-size: 2.6em; line-height: 1; }
+.spin-result-kind { font-size: 0.72em; font-weight: 900; text-transform: uppercase; letter-spacing: 1.2px; }
+.spin-result.bonus .spin-result-kind { color: var(--green); }
+.spin-result.malus .spin-result-kind { color: var(--orange-ink); }
+.spin-result-name { font-weight: 900; font-stretch: 70%; font-size: 1.6em; text-transform: uppercase; line-height: 1.05; }
+.spin-result-note { font-size: 0.85em; font-weight: 700; color: var(--ink-2); margin-top: 3px; }
+@keyframes result-pop { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .spin-result { animation: none; } }
+
+.status-badge.spin-bonus { background: var(--green-soft); color: var(--green); }
+.status-badge.spin-malus { background: var(--orange-soft); color: var(--orange-ink); }
+.odds-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); flex-shrink: 0; }
+.odds-dot.bonus { background: #1f9d5b; }
+.odds-dot.malus { background: #ff5a1f; }
+.odds-percent { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+.roulette-public { display: flex; gap: 22px; align-items: center; }
+.roulette-public .odds-list { flex: 1; min-width: 0; }
+@media (max-width: 600px) {
+  .roulette-public { flex-direction: column; align-items: stretch; }
+  .roulette-public .wheel-compact { align-self: center; max-width: 220px; }
+}
+
+.chance-input { display: flex; align-items: center; gap: 4px; font-family: var(--mono); font-weight: 700; flex-wrap: wrap; justify-content: flex-end; }
+.chance-input input { width: 68px; text-align: right; }
+.chance-real { width: 100%; text-align: right; font-family: var(--mono); }
+.chance-total {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-sm); font-weight: 700;
+}
+.chance-total.ok { background: var(--green-soft); }
+.chance-total.warn { background: var(--yellow-soft); }
+.form-row label.emoji-input { flex: 0 0 76px; }
+.emoji-input input { text-align: center; }
+.push-right-auto { margin-right: auto; }
+.wheel-slice.neutral.a path { fill: #8a8275; }
+.wheel-slice.neutral.b path { fill: #6b6459; }
+.wheel-slice.player-a path { fill: #2457d6; }
+.wheel-slice.player-b path { fill: #7c3aed; }
+.odds-dot.neutral { background: #8a8275; }
+.status-badge.spin-neutral { background: var(--card-2); color: var(--ink-3); }
+.spin-result.neutral { background: var(--card-2); }
+.spin-result.neutral .spin-result-kind { color: var(--ink-3); }
+.spin-detail { font-size: 0.82em; font-weight: 700; color: var(--ink-2); margin-top: 1px; }
+.coin-pick { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; font-size: 0.75em; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; }
+.coin-pick select { font-size: 1.25em; font-weight: 500; text-transform: none; letter-spacing: 0; }
+.coin-target { font-size: 1.1em; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--ink-2); }
+.hint.center { text-align: center; }
+.second-wheel { border-top: 2px dashed var(--line-soft); margin-top: 6px; padding-top: 4px; animation: result-pop 0.4s ease-out; }
+.second-wheel .wheel { max-width: 320px; }

@@ -18,15 +18,18 @@ function supabaseApi() {
   return {
     async load() {
       const optional = (query) => query.then(({ data, error }) => (error ? [] : data))
-      const [players, fineTypes, fines, donations, bonuses] = await Promise.all([
+      const [players, fineTypes, fines, donations, bonuses, rouletteOutcomes, spins, coins] = await Promise.all([
         sb.from('players').select('*').order('surname').then(check),
         sb.from('fine_types').select('*').order('id').then(check),
         sb.from('fines').select('*').order('date', { ascending: false }).order('id', { ascending: false }).then(check),
         // Tables added by later migrations: show none until the migration has been run.
         optional(sb.from('donations').select('*').order('date', { ascending: false }).order('id', { ascending: false })),
         optional(sb.from('bonuses').select('*').order('date', { ascending: false }).order('id', { ascending: false })),
+        optional(sb.from('roulette_outcomes').select('*').order('id')),
+        optional(sb.from('roulette_spins').select('*').order('created_at', { ascending: false }).order('id', { ascending: false })),
+        optional(sb.from('roulette_coins').select('*').order('created_at').order('id')),
       ])
-      return { players, fineTypes, fines, donations, bonuses }
+      return { players, fineTypes, fines, donations, bonuses, rouletteOutcomes, spins, coins }
     },
 
     async getUser() {
@@ -59,14 +62,22 @@ function supabaseApi() {
     deleteFines: async (ids) => check(await sb.from('fines').delete().in('id', ids)),
     addDonation: async (row) => check(await sb.from('donations').insert(row)),
     deleteDonation: async (id) => check(await sb.from('donations').delete().eq('id', id)),
+    // Returns the new row when inserting.
     saveBonus: async ({ id, ...b }) =>
-      check(id ? await sb.from('bonuses').update(b).eq('id', id) : await sb.from('bonuses').insert(b)),
+      check(id ? await sb.from('bonuses').update(b).eq('id', id) : await sb.from('bonuses').insert(b).select().single()),
     deleteBonus: async (id) => check(await sb.from('bonuses').delete().eq('id', id)),
     setPaid: async (ids, paid) => check(await sb.from('fines').update({ paid }).in('id', ids)),
     savePlayer: async ({ id, ...p }) =>
       check(id ? await sb.from('players').update(p).eq('id', id) : await sb.from('players').insert(p)),
     saveFineType: async ({ id, ...t }) =>
       check(id != null ? await sb.from('fine_types').update(t).eq('id', id) : await sb.from('fine_types').insert(t)),
+    saveOutcome: async ({ id, ...o }) =>
+      check(id != null ? await sb.from('roulette_outcomes').update(o).eq('id', id) : await sb.from('roulette_outcomes').insert(o)),
+    deleteOutcome: async (id) => check(await sb.from('roulette_outcomes').delete().eq('id', id)),
+    addSpin: async (row) => check(await sb.from('roulette_spins').insert(row).select().single()),
+    deleteSpin: async (id) => check(await sb.from('roulette_spins').delete().eq('id', id)),
+    addCoins: async (rows) => check(await sb.from('roulette_coins').insert(rows)),
+    deleteCoin: async (id) => check(await sb.from('roulette_coins').delete().eq('id', id)),
   }
 }
 
@@ -77,6 +88,14 @@ function demoApi() {
   db ||= structuredClone(demoSeed)
   db.donations ||= []
   db.bonuses ||= []
+  db.rouletteOutcomes ||= defaultOutcomes(db.fineTypes)
+  db.spins ||= []
+  db.coins ||= []
+  // Demo data saved by an earlier version of the roulette: start the wheel over.
+  if (db.rouletteOutcomes.some((o) => !o.effect || ['reward', 'fine'].includes(o.effect))) {
+    db.rouletteOutcomes = defaultOutcomes(db.fineTypes)
+    db.spins = []
+  }
   let user = null
   try { user = JSON.parse(sessionStorage.getItem(STORE + '-user')) } catch { /* ignore */ }
   const listeners = new Set()
@@ -95,7 +114,8 @@ function demoApi() {
       const fines = [...db.fines].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
       const donations = [...db.donations].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
       const bonuses = [...db.bonuses].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
-      return structuredClone({ players: db.players, fineTypes: db.fineTypes, fines, donations, bonuses })
+      const spins = [...db.spins].sort((a, b) => b.created_at.localeCompare(a.created_at) || b.id - a.id)
+      return structuredClone({ players: db.players, fineTypes: db.fineTypes, fines, donations, bonuses, rouletteOutcomes: db.rouletteOutcomes, spins, coins: db.coins })
     },
     getUser: async () => user,
     onAuthChange(cb) { listeners.add(cb); return () => listeners.delete(cb) },
@@ -130,12 +150,19 @@ function demoApi() {
       save()
     },
     async saveBonus(b) {
-      if (b.id) Object.assign(db.bonuses.find((x) => x.id === b.id), b)
-      else db.bonuses.push({ used_at: null, used_fine_id: null, created_at: new Date().toISOString(), created_by: user?.email, ...b, id: nextId(db.bonuses) })
+      if (b.id) {
+        Object.assign(db.bonuses.find((x) => x.id === b.id), b)
+        save()
+        return null
+      }
+      const row = { used_at: null, used_fine_id: null, created_at: new Date().toISOString(), created_by: user?.email, ...b, id: nextId(db.bonuses) }
+      db.bonuses.push(row)
       save()
+      return structuredClone(row)
     },
     async deleteBonus(id) {
       db.bonuses = db.bonuses.filter((b) => b.id !== id)
+      for (const sp of db.spins) if (sp.bonus_id === id) sp.bonus_id = null
       save()
     },
     async deleteDonation(id) {
@@ -146,6 +173,9 @@ function demoApi() {
       db.fines = db.fines.filter((f) => !ids.includes(f.id))
       // Same as the database: deleting the fine a joker was used on gives the joker back.
       for (const b of db.bonuses) if (ids.includes(b.used_fine_id)) Object.assign(b, { used_fine_id: null, used_at: null })
+      for (const sp of db.spins) {
+        for (const k of ['fine_id', 'target_fine_id', 'new_fine_id']) if (ids.includes(sp[k])) sp[k] = null
+      }
       save()
     },
     async setPaid(ids, paid) {
@@ -163,11 +193,59 @@ function demoApi() {
       else db.fineTypes.push({ active: true, ...t, id: nextId(db.fineTypes) })
       save()
     },
+    async saveOutcome(o) {
+      if (o.id != null) Object.assign(db.rouletteOutcomes.find((x) => x.id === o.id), o)
+      else db.rouletteOutcomes.push({ active: true, fine_type_id: null, created_at: new Date().toISOString(), ...o, id: nextId(db.rouletteOutcomes) })
+      save()
+    },
+    async deleteOutcome(id) {
+      db.rouletteOutcomes = db.rouletteOutcomes.filter((o) => o.id !== id)
+      for (const sp of db.spins) if (sp.outcome_id === id) sp.outcome_id = null
+      save()
+    },
+    async addSpin(row) {
+      const sp = { bonus_id: null, fine_id: null, created_at: new Date().toISOString(), created_by: user?.email, ...row, id: nextId(db.spins) }
+      db.spins.push(sp)
+      save()
+      return structuredClone(sp)
+    },
+    async deleteSpin(id) {
+      db.spins = db.spins.filter((sp) => sp.id !== id)
+      save()
+    },
+    async addCoins(rows) {
+      const now = new Date().toISOString()
+      for (const r of rows) db.coins.push({ reason: null, created_at: now, created_by: user?.email, ...r, id: nextId(db.coins) })
+      save()
+    },
+    async deleteCoin(id) {
+      db.coins = db.coins.filter((c) => c.id !== id)
+      for (const sp of db.spins) if (sp.coin_id === id) sp.coin_id = null
+      save()
+    },
     resetDemo() {
       try { localStorage.removeItem(STORE) } catch { /* ignore */ }
-      db = { ...structuredClone(demoSeed), donations: [], bonuses: [] }
+      db = { ...structuredClone(demoSeed), donations: [], bonuses: [], spins: [], coins: [] }
+      db.rouletteOutcomes = defaultOutcomes(db.fineTypes)
     },
   }
+}
+
+// Same starting wheel as supabase/migrations/007_ruleta.sql.
+function defaultOutcomes(fineTypes) {
+  const kasa = fineTypes.find((t) => t.name === 'Kasa misc')?.id
+  const rows = [
+    ['Multa oproščena', '😇', 'waive_this', 15],
+    ['Pol cene', '✂️', 'half_this', 10],
+    ['Jolly za naslednjo multo', '🃏', 'jolly', 10],
+    ['Nič, plačaš normalno', '🤷', 'none', 20],
+    ['Dvojna multa', '⏫', 'double_this', 20],
+    ['Plačaš multo drugemu', '💸', 'pay_other', 15],
+    ...(kasa != null ? [['Še ena KASA', '🍻', 'extra_fine', 10, kasa]] : []),
+  ]
+  return rows.map(([name, emoji, effect, chance, fine_type_id = null], i) => ({
+    id: i + 1, name, emoji, effect, chance, fine_type_id, active: true, created_at: new Date().toISOString(),
+  }))
 }
 
 export const api = isDemo ? demoApi() : supabaseApi()
