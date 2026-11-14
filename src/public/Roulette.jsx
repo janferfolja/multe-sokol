@@ -14,7 +14,7 @@ const kindBadge = (kind) => (
 
 // History of spins. Used on the Multe page, in the player popup and in admin (with renderActions).
 export function SpinList({ data, spins, onPlayer, renderActions }) {
-  if (spins.length === 0) return <p className="empty">Ruleta se še ni zavrtela.</p>
+  if (spins.length === 0) return <p className="empty">Roulette se še ni zavrtela.</p>
   const players = new Map(data.players.map((p) => [p.id, p]))
   return (
     <div className="fine-list">
@@ -70,7 +70,7 @@ export default function Roulette({ data, onPlayer }) {
   return (
     <section className="section">
       <h2 className="section-title">
-        <span className="section-icon">🎰</span>Ruleta
+        <span className="section-icon">🎰</span>Roulette
         {spins.length > 0 && <span className="count-chip">{spins.length}</span>}
       </h2>
       <p className="hint">

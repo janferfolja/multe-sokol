@@ -10,7 +10,8 @@ export function useRoute() {
     const hash = window.location.hash
     if (hash.includes('access_token') || (authLinkType && !hash.replace(/^#\/?/, ''))) return 'admin'
     if (!hash && new URLSearchParams(window.location.search).has('admin')) return 'admin'
-    return hash.replace(/^#\/?/, '') || 'home'
+    const route = hash.replace(/^#\/?/, '') || 'home'
+    return route === 'ruleta' ? 'roulette' : route // old link
   }
   const [route, setRoute] = useState(read)
   useEffect(() => {

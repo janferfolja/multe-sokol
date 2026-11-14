@@ -533,7 +533,7 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
   .admin-tab-label { font-size: 0.68em; }
 }
 
-/* ── Swipe between Lestvica / Multe / Ruleta / Admin ──────────── */
+/* ── Swipe between Lestvica / Multe / Roulette / Admin ──────────── */
 @keyframes slide-from-right { from { transform: translateX(28%); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes slide-from-left { from { transform: translateX(-28%); opacity: 0; } to { transform: none; opacity: 1; } }
 .slide-in-left { animation: slide-from-right 0.22s ease-out; }
@@ -543,7 +543,7 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 main { overflow-x: clip; }
 .upcoming-fullname { font-weight: 500; color: var(--ink-3); font-size: 0.88em; }
 
-/* ── Ruleta ───────────────────────────────────────────────────── */
+/* ── Roulette ───────────────────────────────────────────────────── */
 .wheel { position: relative; width: 100%; max-width: 420px; margin: 18px auto; }
 .wheel-compact { max-width: 240px; margin: 0; flex: 0 0 auto; width: 100%; }
 .wheel svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(4px 4px 0 var(--line)); }

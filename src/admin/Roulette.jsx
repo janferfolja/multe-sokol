@@ -11,7 +11,7 @@ import { SpinList } from '../public/Roulette'
 const SOUND_KEY = 'multe-sokol-ruleta-sound'
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-// Ruleta: spend a player's coin on a spin, hand out coins, edit what the wheel can give.
+// Roulette: spend a player's coin on a spin, hand out coins, edit what the wheel can give.
 export default function Roulette({ data, run }) {
   const [spinning, setSpinning] = useState(false)
   return (
@@ -117,7 +117,7 @@ function Spinner({ data, run, spinning, setSpinning }) {
   return (
     <section className="section roulette-section">
       <h2 className="section-title">
-        <span className="section-icon">🎰</span>Ruleta
+        <span className="section-icon">🎰</span>Roulette
         <button type="button" className="btn btn-sm btn-ghost push-right" onClick={toggleSound} aria-pressed={sound}
           title={sound ? 'Izklopi zvok' : 'Vklopi zvok'}>
           {sound ? '🔊' : '🔇'}
@@ -392,7 +392,7 @@ function OutcomeForm({ data, run, initial, onDone }) {
     <form className="inline-form form" onSubmit={save}>
       <div className="form-row">
         <label className="emoji-input">Emoji<input value={form.emoji} onChange={set('emoji')} placeholder="😇" /></label>
-        <label className="grow">Ime na ruleti<input value={form.name} onChange={set('name')} required autoFocus placeholder="npr. Multa oproščena" /></label>
+        <label className="grow">Ime na roulette<input value={form.name} onChange={set('name')} required autoFocus placeholder="npr. Multa oproščena" /></label>
       </div>
       <div className="form-row">
         <label className="grow">Kaj naredi
@@ -430,10 +430,10 @@ function OutcomeForm({ data, run, initial, onDone }) {
           none: 'Multa ostane, kot je.',
           double_this: 'Multa, za katero je kovanec, šteje dvojno (3€ → 6€, KASA → 2 KASE).',
           extra_fine: 'Igralec dobi še eno multo (z današnjim datumom). Za to multo ni kovanca.',
-          pay_other: 'Druga ruleta izbere igralca z neplačano multo. Njegova najstarejša multa se mu oprosti, plača jo tisti, ki je vrtel.',
+          pay_other: 'Druga roulette izbere igralca z neplačano multo. Njegova najstarejša multa se mu oprosti, plača jo tisti, ki je vrtel.',
         }[form.effect]}
       </p>
-      <label className="check"><input type="checkbox" checked={form.active} onChange={set('active')} /> Aktiven (na ruleti)</label>
+      <label className="check"><input type="checkbox" checked={form.active} onChange={set('active')} /> Aktiven (na roulette)</label>
       <div className="form-actions">
         {isEdit && <button type="button" className="btn btn-ghost btn-danger push-right-auto" onClick={remove}>🗑 Izbriši</button>}
         <button type="button" className="btn btn-ghost" onClick={onDone}>Prekliči</button>

@@ -2,7 +2,7 @@ import { api } from './api'
 import { insertFinesWithJolly } from './fines'
 import { fineLabel, formatDate, fullName, todayISO } from './stats'
 
-// Ruleta: every new multa gives the player a coin (admins can also hand coins out); an admin
+// Roulette: every new multa gives the player a coin (admins can also hand coins out); an admin
 // spends a coin to spin for the player. Every outcome is about multe and only hits the spinner;
 // with "pay_other" another player is involved, and they can only gain.
 //
@@ -15,7 +15,7 @@ export const EFFECTS = {
   none: { kind: 'neutral', label: '🤷 Nič se ne spremeni' },
   double_this: { kind: 'malus', label: '⏫ Ta multa šteje dvojno' },
   extra_fine: { kind: 'malus', label: '➕ Dodatna multa' },
-  pay_other: { kind: 'malus', label: '💸 Plača multo drugemu (izbere ga druga ruleta)' },
+  pay_other: { kind: 'malus', label: '💸 Plača multo drugemu (izbere ga druga roulette)' },
 }
 export const KINDS = [['bonus', '🍀 Bonusi'], ['neutral', '🤷 Nevtralno'], ['malus', '💀 Malusi']]
 export const kindOf = (o) => EFFECTS[o.effect]?.kind ?? 'neutral'
@@ -159,14 +159,14 @@ export async function saveSpin(data, playerId, coin, outcome, other) {
         msg = '⏫ Multa šteje dvojno'
         break
       case 'jolly': {
-        const b = await api.saveBonus({ date: todayISO(), player_id: playerId, reason: '🎰 Ruleta', reward_kind: 'skip_next', reward: null })
+        const b = await api.saveBonus({ date: todayISO(), player_id: playerId, reason: '🎰 Roulette', reward_kind: 'skip_next', reward: null })
         if (b) rollback.push(() => api.deleteBonus(b.id))
         spin.bonus_id = b?.id ?? null
         msg = '🃏 Jolly za naslednjo multo'
         break
       }
       case 'extra_fine':
-        msg = '➕ Dodatna multa' + (await addFine({ fine_type_id: outcome.fine_type_id, note: `🎰 Ruleta: ${outcomeLabel(outcome)}` }))
+        msg = '➕ Dodatna multa' + (await addFine({ fine_type_id: outcome.fine_type_id, note: `🎰 Roulette: ${outcomeLabel(outcome)}` }))
         break
       case 'pay_other': {
         const { player: op, fine: of } = other

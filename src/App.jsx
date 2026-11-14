@@ -42,7 +42,7 @@ export default function App() {
       <nav className="top-nav">
         <a href="#/" className={route === 'home' ? 'active' : ''}>Lestvica</a>
         <a href="#/multe" className={route === 'multe' ? 'active' : ''}>Multe</a>
-        <a href="#/ruleta" className={route === 'ruleta' ? 'active' : ''}>🎰 Ruleta</a>
+        <a href="#/roulette" className={route === 'roulette' ? 'active' : ''}>🎰 Roulette</a>
         <a href="#/admin" className={route === 'admin' ? 'active' : ''}>Admin</a>
       </nav>
 
@@ -58,7 +58,7 @@ export default function App() {
 
         {data && route === 'home' && <Home data={data} onPlayer={setOpenPlayer} />}
         {data && route === 'multe' && <AllFines data={data} onPlayer={setOpenPlayer} />}
-        {data && route === 'ruleta' && <RoulettePage data={data} reload={reload} onPlayer={setOpenPlayer} />}
+        {data && route === 'roulette' && <RoulettePage data={data} reload={reload} onPlayer={setOpenPlayer} />}
         {data && route === 'admin' && <Admin data={data} reload={reload} />}
         {route === 'app' && <Install />}
       </main>

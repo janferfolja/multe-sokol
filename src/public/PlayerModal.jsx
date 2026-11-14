@@ -62,7 +62,7 @@ export default function PlayerModal({ data, playerId, onClose }) {
         )}
         {spins.length > 0 && (
           <>
-            <h3 className="modal-subtitle">🎰 Ruleta</h3>
+            <h3 className="modal-subtitle">🎰 Roulette</h3>
             <SpinList data={data} spins={spins} />
           </>
         )}

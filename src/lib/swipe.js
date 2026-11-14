@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { go } from './router'
 
 // Pages reachable by swiping, left to right.
-export const SWIPE_PAGES = ['home', 'multe', 'ruleta', 'admin']
+export const SWIPE_PAGES = ['home', 'multe', 'roulette', 'admin']
 
 const EDGE = 24          // px from the screen edge left to the phone's own back gesture
 const MIN_DX = 70        // px of horizontal travel needed

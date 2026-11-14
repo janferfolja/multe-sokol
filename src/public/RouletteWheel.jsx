@@ -135,12 +135,12 @@ export default function RouletteWheel({ outcomes, ref, sound = false, compact = 
   }), [slices, shape, sound])
 
   if (slices.length === 0) {
-    return <div className="wheel-empty">Ruleta nima aktivnih izidov.</div>
+    return <div className="wheel-empty">Roulette nima aktivnih izidov.</div>
   }
 
   return (
     <div className={`wheel ${compact ? 'wheel-compact' : ''} ${spinning ? 'spinning' : ''} ${winId != null ? 'has-winner' : ''}`} data-noswipe>
-      <svg viewBox="-110 -110 220 220" role="img" aria-label="Ruleta">
+      <svg viewBox="-110 -110 220 220" role="img" aria-label="Roulette">
         <circle r="106" className="wheel-rim" />
         <g ref={wheelRef} transform={`rotate(${rest})`}>
           {slices.map(({ o, i, a0, a1, sweep }) => {
