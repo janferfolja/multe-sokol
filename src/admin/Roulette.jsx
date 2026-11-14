@@ -123,10 +123,10 @@ function Spinner({ data, run, spinning, setSpinning }) {
           {sound ? '🔊' : '🔇'}
         </button>
       </h2>
-      <p className="hint">Vsaka nova multa = 🪙 kovanec. Izberi igralca in zavrti zanj.</p>
+      <p className="hint">Vsaka neplačana multa = 🪙 kovanec. Ko je multa plačana, kovanec zapade. Izberi igralca in zavrti zanj.</p>
 
       {holders.length === 0 ? (
-        <p className="empty">Nihče nima kovanca. Kovanec dobi igralec za vsako novo multo, ali pa ga podeliš spodaj.</p>
+        <p className="empty">Nihče nima kovanca. Kovanec dobi igralec za vsako neplačano multo, ali pa ga podeliš spodaj.</p>
       ) : (
         <div className="chips roulette-players">
           {holders.map((p) => (
@@ -222,7 +222,7 @@ function Coins({ data, run, locked }) {
   return (
     <section className="section">
       <h2 className="section-title"><span className="section-icon">🪙</span>Podeli kovance</h2>
-      <p className="hint">Kovanci na roko, poleg tistih iz mult. Tak kovanec velja za igralčevo najstarejšo neplačano multo.</p>
+      <p className="hint">Kovanci na roko, poleg tistih iz mult. Tak kovanec velja za igralčevo najstarejšo neplačano multo in ne zapade, ko kaj plača.</p>
       <form className="form" onSubmit={give}>
         <fieldset className="player-picker">
           <legend>Igralci <span className="count-chip">{picked.size}</span></legend>

@@ -33,17 +33,17 @@ const shortDate = (iso) => formatDate(iso).slice(0, 5)
 // ── Coins ───────────────────────────────────────────────────────────────
 
 // Unspent coins: Map(player_id → [{ key, fine } | { key, coin }]), oldest first.
-// A multa is a coin unless it was imported, a jolly cancelled it, or the roulette itself gave it.
-export function coinsByPlayer({ fines, bonuses = [], spins = [], coins = [] }) {
+// A multa is a coin only while it's open: once it's paid or forgiven (jolly, roulette, Arhiv) the
+// coin is gone. Imported multe and multe the roulette itself gave never are. Hand-given coins stay.
+export function coinsByPlayer({ fines, spins = [], coins = [] }) {
   const notNull = (x) => x != null
   const usedFines = new Set(spins.map((s) => s.fine_id).filter(notNull))
   const usedCoins = new Set(spins.map((s) => s.coin_id).filter(notNull))
   const fromSpin = new Set(spins.map((s) => s.new_fine_id).filter(notNull))
-  const jollied = new Set(bonuses.map((b) => b.used_fine_id).filter(notNull))
   const m = new Map()
   const add = (pid, c) => (m.get(pid) ?? m.set(pid, []).get(pid)).push(c)
   for (const f of fines) {
-    if (f.created_by === 'import' || fromSpin.has(f.id) || jollied.has(f.id) || usedFines.has(f.id)) continue
+    if (f.paid || f.waived || f.created_by === 'import' || fromSpin.has(f.id) || usedFines.has(f.id)) continue
     add(f.player_id, { key: `f${f.id}`, fine: f, date: f.date })
   }
   for (const c of coins) if (!usedCoins.has(c.id)) add(c.player_id, { key: `c${c.id}`, coin: c, date: c.created_at.slice(0, 10) })

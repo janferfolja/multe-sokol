@@ -74,7 +74,7 @@ export default function Roulette({ data, onPlayer }) {
         {spins.length > 0 && <span className="count-chip">{spins.length}</span>}
       </h2>
       <p className="hint">
-        Za vsako multo dobiš 🪙 kovanec. Admin ga zavrti zate: bo multa oproščena ali dvojna?
+        Za vsako neplačano multo imaš 🪙 kovanec (ko jo plačaš, zapade). Admin ga zavrti zate: bo multa oproščena ali dvojna?
         Izidi, ki za tvojo multo ne pridejo v poštev, se izpustijo.
       </p>
       {wheel.length > 0 && (

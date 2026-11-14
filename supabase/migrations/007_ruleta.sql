@@ -3,8 +3,9 @@
 -- only hits the player who spins; the one time someone else is involved ("pay someone's multa"),
 -- they can only gain.
 --
--- Coins from multe are not stored: each multa added in the app is a coin (not imported ones,
--- not ones a jolly cancelled, not ones the roulette itself gave) until a spin uses it.
+-- Coins from multe are not stored: each open multa added in the app is a coin until a spin uses
+-- it. Once the multa is paid or forgiven the coin is gone. Imported multe and multe the roulette
+-- itself gave never are coins. (Worked out in the app: src/lib/roulette.js, coinsByPlayer.)
 -- Safe to run again: it rebuilds the roulette tables (dropping any earlier version of them).
 
 drop table if exists public.roulette_spins;
