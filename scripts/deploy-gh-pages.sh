@@ -18,10 +18,8 @@ trap 'rm -rf "$tmp"' EXIT
 cp -r dist/. "$tmp"
 cd "$tmp"
 git init -q -b gh-pages
-git -c user.name="Jan Ferfolja" -c user.email="135964164+janferfolja@users.noreply.github.com" \
-  commit -q --allow-empty -m "Deploy $rev" && git add -A && \
-git -c user.name="Jan Ferfolja" -c user.email="135964164+janferfolja@users.noreply.github.com" \
-  commit -q --amend -m "Deploy $rev"
+git add -A
+git -c user.name="Jan Ferfolja" -c user.email="135964164+janferfolja@users.noreply.github.com" commit -q -m "Deploy $rev"
 git -c credential.helper= \
   -c credential.helper='!f() { test "$1" = get && echo username=janferfolja && echo "password=$GH_TOKEN"; }; f' \
   push -q -f "https://github.com/$REPO.git" gh-pages
