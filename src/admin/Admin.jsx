@@ -10,12 +10,11 @@ import Charity from './Charity'
 import Bonuses from './Bonuses'
 import PenaltyAlert from './PenaltyAlert'
 import Records from './Records'
-import Roulette from './Roulette'
+import { useAdminSession, useRun } from './useAdmin'
 
 const TABS = [
   ['new', '➕ Nove multe'],
   ['bonus', '🏅 Bonusi'],
-  ['roulette', '🎰 Ruleta'],
   ['charity', '🍻 Dobrodelno'],
   ['pay', '💶 Plačila'],
   ['history', '🗂️ Arhiv'],
@@ -25,10 +24,11 @@ const TABS = [
 ]
 
 export default function Admin({ data, reload }) {
-  const [user, setUser] = useState(undefined) // undefined = still checking
-  const [admin, setAdmin] = useState(false)
+  const { user, admin } = useAdminSession((u) => {
+    if (u && (authLinkType || new URLSearchParams(window.location.search).has('admin'))) go('admin')
+  })
+  const [run, toast] = useRun(reload)
   const [tab, setTab] = useState('new')
-  const [toast, setToast] = useState(null)
   const tabsRef = useRef(null)
   const tabsAnchor = useRef(null) // marks where the tab bar sits when not pinned
 
@@ -47,39 +47,6 @@ export default function Admin({ data, reload }) {
     const anchor = tabsAnchor.current
     if (anchor && anchor.getBoundingClientRect().top < 0) {
       requestAnimationFrame(() => window.scrollTo({ top: anchor.getBoundingClientRect().top + window.scrollY }))
-    }
-  }
-
-  useEffect(() => {
-    let alive = true
-    const update = async (u) => {
-      const ok = u ? await api.isAdmin() : false
-      if (!alive) return
-      setUser(u)
-      setAdmin(ok)
-      if (u && (authLinkType || new URLSearchParams(window.location.search).has('admin'))) go('admin')
-    }
-    api.getUser().then(update)
-    const off = api.onAuthChange(update)
-    return () => { alive = false; off() }
-  }, [])
-
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 3500)
-    return () => clearTimeout(t)
-  }, [toast])
-
-  // Run a write, then refresh data and show a confirmation (or the error).
-  const run = async (fn, message) => {
-    try {
-      await fn()
-      await reload()
-      setToast({ kind: 'ok', text: typeof message === 'function' ? message() : message })
-      return true
-    } catch (e) {
-      setToast({ kind: 'err', text: `Napaka: ${e.message}` })
-      return false
     }
   }
 
@@ -120,14 +87,13 @@ export default function Admin({ data, reload }) {
       </nav>
       {tab === 'new' && <NewFines {...props} />}
       {tab === 'bonus' && <Bonuses {...props} />}
-      {tab === 'roulette' && <Roulette {...props} />}
       {tab === 'charity' && <Charity {...props} />}
       {tab === 'pay' && <Payments {...props} />}
       {tab === 'history' && <History {...props} />}
       {tab === 'players' && <Players {...props} />}
       {tab === 'types' && <FineTypes {...props} />}
       {tab === 'records' && <Records {...props} />}
-      {toast && <div className={`toast toast-${toast.kind}`} role="status">{toast.text}</div>}
+      {toast}
     </>
   )
 }

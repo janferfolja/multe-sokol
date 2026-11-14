@@ -511,7 +511,7 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 /* ── Admin tabs: all visible, sticky ──────────────────────────── */
 .admin-tabs {
   position: sticky; top: 0; z-index: 20;
-  display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px;
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;
   margin: 0 -6px 16px; padding: 8px 6px;
   background: var(--paper);
   border-bottom: 2px solid var(--line-soft);
@@ -528,12 +528,12 @@ input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--orange);
 /* the Plačila bulk bar sticks just under the tab bar */
 .bulk-bar { top: var(--admin-tabs-h, 0px); }
 @media (max-width: 600px) {
-  .admin-tabs { grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 6px; }
+  .admin-tabs { grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 6px; }
   .admin-tabs button { padding: 6px 2px; }
   .admin-tab-label { font-size: 0.68em; }
 }
 
-/* ── Swipe between Lestvica / Multe / Admin ───────────────────── */
+/* ── Swipe between Lestvica / Multe / Ruleta / Admin ──────────── */
 @keyframes slide-from-right { from { transform: translateX(28%); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes slide-from-left { from { transform: translateX(-28%); opacity: 0; } to { transform: none; opacity: 1; } }
 .slide-in-left { animation: slide-from-right 0.22s ease-out; }
