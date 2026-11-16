@@ -1,7 +1,7 @@
 import { useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { totalChance } from '../lib/roulette'
 
-// The roulette wheel. Slices are sized by chance. Pointer at the top.
+// The roulette wheel. All slices are the same size, whatever their chance (the chance only decides
+// where it lands, see pickOutcome). Pointer at the top.
 // Admin spins it through the ref: `await ref.current.spin(outcome)` resolves when it stops.
 
 const R = 92 // slice radius; the rim sits outside it, the viewBox is -110…110
@@ -65,14 +65,8 @@ export default function RouletteWheel({ outcomes, ref, sound = false, compact = 
   const [winner, setWinner] = useState(null) // { id, shape }
 
   const slices = useMemo(() => {
-    const total = totalChance(outcomes)
-    const out = []
-    for (const [i, o] of outcomes.entries()) {
-      const a0 = out.at(-1)?.a1 ?? 0
-      const sweep = total > 0 ? (Number(o.chance) / total) * 360 : 0
-      out.push({ o, i, a0, a1: a0 + sweep, sweep })
-    }
-    return out
+    const sweep = 360 / Math.max(1, outcomes.length)
+    return outcomes.map((o, i) => ({ o, i, a0: i * sweep, a1: (i + 1) * sweep, sweep }))
   }, [outcomes])
 
   // The winner stays highlighted across data reloads, but not once the wheel is edited.

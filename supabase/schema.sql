@@ -175,7 +175,8 @@ create unique index if not exists fines_one_penalty_per_fine on public.fines (pe
 alter table public.fines add column if not exists points smallint check (points >= 0);
 
 -- ── Ruleta (see migrations/007_ruleta.sql) ──
--- What the wheel can land on. chance is a percentage; the wheel is shared out by chance.
+-- What the wheel can land on. chance is a percentage (admins only see it); it decides where the
+-- wheel lands, but every slice on the wheel is drawn the same size.
 -- "This multa" = the multa the coin came from (for a hand-given coin: the player's oldest unpaid one).
 --   bonus   waive_this  → this multa is forgiven
 --           half_this   → this multa costs half (euro multe only)

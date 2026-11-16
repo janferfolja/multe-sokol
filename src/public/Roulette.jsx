@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { coinsByPlayer, effectLabel, formatPercent, outcomeLabel, realPercent, spinDetail, wheelOutcomes } from '../lib/roulette'
+import { coinsByPlayer, effectLabel, outcomeLabel, spinDetail, wheelOutcomes } from '../lib/roulette'
 import { formatDate, fullName } from '../lib/stats'
 import RouletteWheel from './RouletteWheel'
 
@@ -38,8 +38,8 @@ export function SpinList({ data, spins, onPlayer, renderActions }) {
   )
 }
 
-// What the wheel can give and how likely it is.
-export function OddsList({ data, wheel }) {
+// What the wheel can give (no chances: those are for admins only).
+function OutcomeList({ data, wheel }) {
   return (
     <div className="manage-list odds-list">
       {wheel.map((o) => (
@@ -49,7 +49,6 @@ export function OddsList({ data, wheel }) {
             <b>{outcomeLabel(o)}</b>
             <div className="muted small">{effectLabel(o, data.fineTypes)}</div>
           </div>
-          <span className="odds-percent">{formatPercent(realPercent(o, wheel))}</span>
         </div>
       ))}
     </div>
@@ -80,7 +79,7 @@ export default function Roulette({ data, onPlayer }) {
       {wheel.length > 0 && (
         <div className="roulette-public">
           <RouletteWheel outcomes={wheel} compact />
-          <OddsList data={data} wheel={wheel} />
+          <OutcomeList data={data} wheel={wheel} />
         </div>
       )}
       {holders.length > 0 && (

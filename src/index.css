@@ -601,7 +601,6 @@ main { overflow-x: clip; }
 .odds-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); flex-shrink: 0; }
 .odds-dot.bonus { background: #1f9d5b; }
 .odds-dot.malus { background: #ff5a1f; }
-.odds-percent { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
 .roulette-public { display: flex; gap: 22px; align-items: center; }
 .roulette-public .odds-list { flex: 1; min-width: 0; }
 @media (max-width: 600px) {
